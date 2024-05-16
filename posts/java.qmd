@@ -1,9 +1,9 @@
 ---
-title: "TidyTuesday: Retail Sales data analysis with Plotly in R"
+title: "Java"
 date: 01-2-2023 
 author: Nathan Bresette 
 categories: [code, analysis, visualization, plotly]
-image: "nathan.jpg"
+image: "linkedin.jpeg"
 about:
   template: jolla
   image-width: 100px

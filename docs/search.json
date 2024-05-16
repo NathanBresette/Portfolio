@@ -1,23 +1,58 @@
 [
   {
-    "objectID": "aboutme_index.html",
-    "href": "aboutme_index.html",
-    "title": "Nathan Bresette",
+    "objectID": "surveys/index.html",
+    "href": "surveys/index.html",
+    "title": "TidyTuesday: Retail Sales data analysis with Plotly in R",
     "section": "",
-    "text": "I am a student at Truman"
+    "text": "In this post, I will analyze the TidyTuesday dataset about Retail Sales …"
+  },
+  {
+    "objectID": "datafest/index.html",
+    "href": "datafest/index.html",
+    "title": "TidyTuesday: Retail Sales data analysis with Plotly in R",
+    "section": "",
+    "text": "In this post, I will analyze the TidyTuesday dataset about Retail Sales …"
+  },
+  {
+    "objectID": "datafest.html",
+    "href": "datafest.html",
+    "title": "Consulting",
+    "section": "",
+    "text": "TidyTuesday: Retail Sales data analysis with Plotly in R\n\n\n\n\n\n\ncode\n\n\nanalysis\n\n\nvisualization\n\n\nplotly\n\n\n\n\n\n\n\n\n\nJan 2, 2023\n\n\nNathan Bresette\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "posts/java.html",
+    "href": "posts/java.html",
+    "title": "Java",
+    "section": "",
+    "text": "In this post, I will analyze the TidyTuesday dataset about Retail Sales …"
+  },
+  {
+    "objectID": "consulting.html",
+    "href": "consulting.html",
+    "title": "Consulting",
+    "section": "",
+    "text": "TidyTuesday: Retail Sales data analysis with Plotly in R\n\n\n\n\n\n\ncode\n\n\nanalysis\n\n\nvisualization\n\n\nplotly\n\n\n\n\n\n\n\n\n\nJan 2, 2023\n\n\nNathan Bresette\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "posts/index.html",
     "href": "posts/index.html",
     "title": "TidyTuesday: Retail Sales data analysis with Plotly in R",
     "section": "",
-    "text": "In this post, I will analyze the TidyTuesday dataset about Retail Sales … d"
+    "text": "In this post, I will analyze the TidyTuesday dataset about Retail Sales …"
   },
   {
     "objectID": "projects.html",
     "href": "projects.html",
     "title": "Projects",
     "section": "",
-    "text": "TidyTuesday: Retail Sales data analysis with Plotly in R\n\n\n\n\n\n\ncode\n\n\nanalysis\n\n\nvisualization\n\n\nplotly\n\n\n\n\n\n\n\n\n\nJan 2, 2023\n\n\nNathan Bresette\n\n\n\n\n\n\nNo matching items"
+    "text": "Java\n\n\n\n\n\n\ncode\n\n\nanalysis\n\n\nvisualization\n\n\nplotly\n\n\n\n\n\n\n\n\n\nJan 2, 2023\n\n\nNathan Bresette\n\n\n\n\n\n\n\n\n\n\n\n\nTidyTuesday: Retail Sales data analysis with Plotly in R\n\n\n\n\n\n\ncode\n\n\nanalysis\n\n\nvisualization\n\n\nplotly\n\n\n\n\n\n\n\n\n\nJan 2, 2023\n\n\nNathan Bresette\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "aboutme_index.html",
+    "href": "aboutme_index.html",
+    "title": "Nathan Bresette",
+    "section": "",
+    "text": "I am a student at Truman"
   }
 ]

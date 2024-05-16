@@ -8,28 +8,12 @@ website:
     left:
       - href: aboutme_index.qmd
         text: About Me
-      - text: Projects
-        menu: 
-          - href: projects.qmd
-            text: R Package        
-          - href: projects.qmd
-            text: Text Classification & Sentiment Analysis
-          - href: projects.qmd
-            text: NCAA Analysis
-      - text: Consulting
-        menu: 
-          - href: projects.qmd
-            text: Project 1
-          - href: projects.qmd
-            text: Project 2
-      - text: DataFest
-        menu: 
-          - href: projects.qmd
-            text: About DataFest
-          - href: projects.qmd
-            text: Practice Competition
-          - href: projects.qmd
-            text: Actual Competition   
+      - href: projects.qmd
+        text: Projects
+      - href: consulting.qmd
+        text: Consulting
+      - href: datafest.qmd
+        text: DataFest
       - href: Resume.qmd
         text: Resume
             

@@ -1,7 +1,20 @@
 [
   {
+    "listing": "/datafest.html",
+    "items": [
+      "/datafest/index.html"
+    ]
+  },
+  {
+    "listing": "/consulting.html",
+    "items": [
+      "/surveys/index.html"
+    ]
+  },
+  {
     "listing": "/projects.html",
     "items": [
+      "/posts/java.html",
       "/posts/index.html"
     ]
   }
