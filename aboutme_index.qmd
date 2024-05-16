@@ -1,0 +1,14 @@
+---
+title: "Nathan Bresette"
+image: images/nathan.jpg
+about:
+  template: jolla
+  image-width: 20em
+  links: 
+    - icon: twitter
+      href: https://twitter.com/
+    - icon: github
+      href: https://github.com/YOURUSERNAME/YOURREPO
+---
+ 
+I am a student at Truman

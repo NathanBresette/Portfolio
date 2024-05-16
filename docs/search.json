@@ -1,16 +1,23 @@
 [
   {
-    "objectID": "projects.html#code",
-    "href": "projects.html#code",
-    "title": "Projects",
-    "section": "Code",
-    "text": "Code"
+    "objectID": "aboutme_index.html",
+    "href": "aboutme_index.html",
+    "title": "Nathan Bresette",
+    "section": "",
+    "text": "I am a student at Truman"
   },
   {
-    "objectID": "projects.html#conclusion",
-    "href": "projects.html#conclusion",
+    "objectID": "posts/index.html",
+    "href": "posts/index.html",
+    "title": "TidyTuesday: Retail Sales data analysis with Plotly in R",
+    "section": "",
+    "text": "In this post, I will analyze the TidyTuesday dataset about Retail Sales … d"
+  },
+  {
+    "objectID": "projects.html",
+    "href": "projects.html",
     "title": "Projects",
-    "section": "Conclusion",
-    "text": "Conclusion"
+    "section": "",
+    "text": "TidyTuesday: Retail Sales data analysis with Plotly in R\n\n\n\n\n\n\ncode\n\n\nanalysis\n\n\nvisualization\n\n\nplotly\n\n\n\n\n\n\n\n\n\nJan 2, 2023\n\n\nDeepsha Menghani\n\n\n\n\n\n\nNo matching items"
   }
 ]

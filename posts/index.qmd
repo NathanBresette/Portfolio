@@ -1,0 +1,12 @@
+---
+title: "TidyTuesday: Retail Sales data analysis with Plotly in R"
+date: 01-2-2023 
+author: Deepsha Menghani 
+categories: [code, analysis, visualization, plotly]
+image: images/nathan.jpg
+about:
+  template: jolla
+---
+
+In this post, I will analyze the TidyTuesday dataset about Retail Sales ...
+d

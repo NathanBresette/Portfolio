@@ -6,14 +6,16 @@ website:
   title: "Nathan Bresette's Portfolio"
   navbar:
     left:
-      - href: index.qmd
+      - href: aboutme_index.qmd
         text: About Me
       - text: Projects
         menu: 
           - href: projects.qmd
-            text: Project 1
+            text: R Package        
           - href: projects.qmd
-            text: Project 2
+            text: Text Classification & Sentiment Analysis
+          - href: projects.qmd
+            text: NCAA Analysis
       - text: Consulting
         menu: 
           - href: projects.qmd
@@ -23,9 +25,14 @@ website:
       - text: DataFest
         menu: 
           - href: projects.qmd
-            text: Project 1
+            text: About DataFest
           - href: projects.qmd
-            text: Project 2
+            text: Practice Competition
+          - href: projects.qmd
+            text: Actual Competition   
+      - href: Resume.qmd
+        text: Resume
+            
     tools:
       - icon: twitter
         href: https://twitter.com/
