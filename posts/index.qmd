@@ -1,7 +1,7 @@
 ---
 title: "TidyTuesday: Retail Sales data analysis with Plotly in R"
 date: 01-2-2023 
-author: Deepsha Menghani 
+author: Nathan Bresette 
 categories: [code, analysis, visualization, plotly]
 image: images/nathan.jpg
 about:
