@@ -2,8 +2,8 @@
 title: "Projects"
 ---
 
-## Project 1
+## About The Project
 
-## Project 2
+## Code
 
-## Project 3
+## Conclusion

@@ -3,12 +3,29 @@ project:
   output-dir: docs
   
 website:
-  title: "Nathan Bresette's P"
+  title: "Nathan Bresette's Portfolio"
   navbar:
     left:
       - href: index.qmd
-        text: Home
-      - projects.qmd
+        text: About Me
+      - text: Projects
+        menu: 
+          - href: projects.qmd
+            text: Project 1
+          - href: projects.qmd
+            text: Project 2
+      - text: Consulting
+        menu: 
+          - href: projects.qmd
+            text: Project 1
+          - href: projects.qmd
+            text: Project 2
+      - text: DataFest
+        menu: 
+          - href: projects.qmd
+            text: Project 1
+          - href: projects.qmd
+            text: Project 2
     tools:
       - icon: twitter
         href: https://twitter.com/
@@ -20,7 +37,7 @@ website:
 
 format:
   html:
-    theme: cerulean
+    theme: Cyborg
     toc: true
 
 editor: source

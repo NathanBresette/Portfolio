@@ -1,23 +1,16 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "About Me",
-    "section": "",
-    "text": "Thanks for checking out my web site!"
+    "objectID": "projects.html#code",
+    "href": "projects.html#code",
+    "title": "Projects",
+    "section": "Code",
+    "text": "Code"
   },
   {
-    "objectID": "projects.html#project-2",
-    "href": "projects.html#project-2",
+    "objectID": "projects.html#conclusion",
+    "href": "projects.html#conclusion",
     "title": "Projects",
-    "section": "Project 2",
-    "text": "Project 2"
-  },
-  {
-    "objectID": "projects.html#project-3",
-    "href": "projects.html#project-3",
-    "title": "Projects",
-    "section": "Project 3",
-    "text": "Project 3"
+    "section": "Conclusion",
+    "text": "Conclusion"
   }
 ]
