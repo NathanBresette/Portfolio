@@ -4,11 +4,14 @@ image: images/nathan.jpg
 about:
   template: jolla
   image-width: 20em
-  links: 
-    - icon: twitter
-      href: https://twitter.com/
-    - icon: github
-      href: https://github.com/YOURUSERNAME/YOURREPO
+  links:
+    - icon: linkedin
+      text: LinkedIn
+      href: www.linkedin.com/in/nathanbresette
+    - icon: phone
+      text: 816-969-0150
+    - icon: envelope
+      text: nathanbres4@gmail.com
 ---
- 
+
 I am a student at Truman
