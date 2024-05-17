@@ -3,9 +3,9 @@ project:
   output-dir: docs
   
 website:
-  title: "Nathan Bresette's Portfolio"
+  title: "Nathan Bresette"
   navbar:
-    left:
+    right:
       - href: aboutme_index.qmd
         text: About Me
       - href: projects.qmd
@@ -16,16 +16,21 @@ website:
         text: DataFest
       - href: Resume.qmd
         text: Resume
-          
-  
+
   page-footer:
-    right: "Built with [Quarto](https://quarto.org/)"
-    left: "&copy; Copyright 2023, Nathan Bresette"
+    center:
+      - icon: linkedin
+        text: LinkedIn  
+        href: https://linkedin.com
+    left:
+      - icon: phone
+        text: 816-969-0150    
+    right:
+      - icon: envelope
+        text: nathanbresette04@gmail.com
 
 format:
   html:
     theme: Cyborg
+    css: styles.css
     toc: true
-
-editor: source
-

@@ -3,10 +3,12 @@ title: "TidyTuesday: Retail Sales data analysis with Plotly in R"
 date: 01-2-2023 
 author: Nathan Bresette 
 categories: [code, analysis, visualization, plotly]
-image: "nathan.jpg"
+image: "3d_pca.jpg"
 about:
   template: jolla
   image-width: 100px
 ---
 
-In this post, I will analyze the TidyTuesday dataset about Retail Sales ...
+In this post, I will analyze the TidyTuesday dataset about Retail Sales I am curious how much I can type before
+ashfojha kajf akjdsfkjdf
+third line

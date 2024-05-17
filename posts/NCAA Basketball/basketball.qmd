@@ -1,0 +1,517 @@
+---
+title: "NCAA Basketball Analysis"
+author: "Nathan Bresette"
+date: "2024-04-12"
+categories: [Webscraping, PCA, Neural Network, XGBoost, ggplot, plotly]
+image: "3d_pca.png"
+
+output:
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+format:
+  html:
+    code-link: true
+    code-fold: true
+    code-overflow: wrap
+    warning: false
+---
+
+Performed web scraping using Selenium and BeautifulSoup, followed by an in-depth analysis in that included Principal Component Analysis, XGBoost, and neural networks.
+
+
+## Abstract
+This project presents an analysis of college basketball team performance based on data from men's NCAA Basketball. After merging the datasets from haslametrics and teamrankings along with data cleaning and feature engineering in R, the dataset consisted of 16 columns with 361 rows.
+
+Exploratory data analysis includes correlation analysis, visualization of distributions, and principal component analysis (PCA) to address collinearity among variables. Although PCA had good insights, it was not utilized due to its limited account for variance.
+
+The feature engineered variable, 'Rank_Category', classifies teams into three categories based on their 'Rank' column: Rank (0-25), Top 50% (excluding Rank), and Bottom 50%. Modeling efforts focused on predicting 'Rank_Category' using XGBoost with racing ANOVA tuning which resulted in an accuracy of 79.12% and an AUC of 0.918. Variable importance analysis showed key predictors including defensive efficiency, win rate, defensive field goal percentage, offensive 2-point percentage, and offensive turnovers. Additionally, a neural network model achieved a higher accuracy of 97.80%.
+
+## Webscraping Data in Python
+Scraping the first website Halsametrics.com with selenium
+```{r, eval=FALSE}
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+from io import StringIO
+
+
+# Set up the WebDriver with ChromeOptions
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument('/usr/local/bin/chromedriver')  # Add the path to chromedriver executable
+
+# Initialize the WebDriver
+driver = webdriver.Chrome(options=chrome_options)
+
+# Navigate to the webpage
+driver.get('https://haslametrics.com/')
+
+# Wait for the page to load and for the 'Defense' button to be clickable
+wait = WebDriverWait(driver, 20)
+defense_button = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="cboRatings"]/option[@value="Defense"]')))
+
+# Click the 'Defense' button to load the defensive ratings
+defense_button.click()
+
+# Wait for the table to load
+wait.until(EC.presence_of_element_located((By.XPATH, '//*[@id="myTable"]')))
+
+# Scrape the table
+table = driver.find_element(By.XPATH, '//*[@id="myTable"]')
+hasla = pd.read_html(table.get_attribute('outerHTML'))[0]
+
+# Flatten the MultiIndex columns
+hasla.columns = [' '.join(col).strip() if isinstance(col, tuple) else col for col in hasla.columns.values]
+
+# Rename 'Unnamed: 1_level_0 Team' to 'Team'
+hasla.rename(columns={'Unnamed: 1_level_0 Team': 'Team'}, inplace=True)
+
+# Extracting win/loss information and creating new columns
+hasla['Win'] = hasla['Team'].str.extract(r'\((\d+)-\d+\)')
+hasla['Loss'] = hasla['Team'].str.extract(r'\(\d+-(\d+)\)')
+
+# Remove parentheses and numbers from 'Team' column
+hasla['Team'] = hasla['Team'].replace(regex={'\([^)]*\)': '', '\d+': ''})
+
+hasla['Team'] = hasla['Team'].str.strip()
+
+# Save the DataFrame to Excel
+desktop_path = "/Users/nathanbresette/Desktop"
+hasla.to_excel(f'{desktop_path}/findhasla.xlsx', index=False)
+
+# Close the browser
+driver.quit()
+```
+
+### Scraping the second website teamrankings.com with BeautifulSoup
+```{r, eval=FALSE}
+def scrape_and_merge(urls, new_column_names):
+    dfs = []
+
+    for url in urls:
+        response = requests.get(url)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        table = soup.find('table')
+        df = pd.read_html(StringIO(str(table)))[0]
+
+        if url in new_column_names:
+            df.columns = new_column_names[url]
+
+        for col in df.columns:
+            if col not in ['Rank', 'Team']:
+                df[col] = pd.to_numeric(df[col].replace('%', '', regex=True), errors='coerce')
+
+        dfs.append(df)
+
+    # Merge all DataFrames dynamically
+    combined_df = dfs[0]
+    for i, df in enumerate(dfs[1:], start=2):
+        combined_df = pd.merge(combined_df, df, on='Team', how='outer', suffixes=('', f'_{i}'))
+
+    # Drop duplicate 'Team' columns
+    combined_df = combined_df.loc[:, ~combined_df.columns.duplicated()]
+
+    return combined_df
+
+# Define the URLs
+urls = [
+    'https://www.teamrankings.com/ncaa-basketball/stat/opponent-free-throw-rate',
+    'https://www.teamrankings.com/ncaa-basketball/stat/offensive-rebounding-pct',
+    'https://www.teamrankings.com/ncaa-basketball/stat/opponent-offensive-rebounding-pct',
+    'https://www.teamrankings.com/ncaa-basketball/stat/opponent-three-point-pct',
+    'https://www.teamrankings.com/ncaa-basketball/stat/three-point-pct',
+    'https://www.teamrankings.com/ncaa-basketball/stat/opponent-two-point-pct',
+    'https://www.teamrankings.com/ncaa-basketball/stat/two-point-pct',
+    'https://www.teamrankings.com/ncaa-basketball/stat/possessions-per-game',
+    'https://www.teamrankings.com/ncaa-basketball/stat/turnovers-per-possession',
+    'https://www.teamrankings.com/ncaa-basketball/stat/opponent-turnovers-per-possession'
+]
+
+# Create a dictionary with new column names for certain URLs
+new_column_names = {
+    'https://www.teamrankings.com/ncaa-basketball/stat/opponent-free-throw-rate': ['Rank', 'Team', 'FTR_2023', 'FTR_L3', 'FTR_L1', 'FTR_Home', 'FTR_Away', 'TO 2022'],
+    'https://www.teamrankings.com/ncaa-basketball/stat/offensive-rebounding-pct': ['Rank', 'Team', 'ORB_2023', 'ORB_L3', 'ORB_L1', 'ORB_Home', 'ORB_Away', 'ORB 2022'],
+    'https://www.teamrankings.com/ncaa-basketball/stat/opponent-offensive-rebounding-pct': ['Rank', 'Team', 'DRB_2023', 'DRP_L3', 'DRB_L1', 'DRB_Home', 'DRB_Away', 'DRB 2022'],
+    'https://www.teamrankings.com/ncaa-basketball/stat/opponent-three-point-pct': ['Rank', 'Team', 'opp3_2023', 'opp3_L3', 'opp3_L1', 'opp3_Home', 'opp3_Away', 'opp3 2022'],
+    'https://www.teamrankings.com/ncaa-basketball/stat/three-point-pct': ['Rank', 'Team', 'p3_2023', 'p3_L3', 'p3_L1', 'p3_Home', 'p3_Away', 'p3 2022'],
+    'https://www.teamrankings.com/ncaa-basketball/stat/opponent-two-point-pct': ['Rank', 'Team', 'o2p_2023', 'o2p_L3', 'op2_L1', 'op2_Home', 'op2_Away', 'op2 2022'],
+    'https://www.teamrankings.com/ncaa-basketball/stat/two-point-pct': ['Rank', 'Team', '2p_2023', '2p_L3', '2p_L1', '2p_Home', '2p_Away', '2p 2022'],
+    'https://www.teamrankings.com/ncaa-basketball/stat/possessions-per-game': ['Rank', 'Team', 'Pace_2023', 'Pace_L3', 'Pace_L1', 'Pace_Home', 'Pace_Away', 'Pace 2022'],
+    'https://www.teamrankings.com/ncaa-basketball/stat/turnovers-per-possession': ['Rank', 'Team', 'TO_2023', 'TO_L3', 'TO_L1', 'TO_Home', 'TO_Away', 'TO 2022'],
+    'https://www.teamrankings.com/ncaa-basketball/stat/opponent-turnovers-per-possession': ['Rank', 'Team', 'oppTO_2023', 'oppTO_L3', 'oppTO_L1', 'oppTO_Home', 'oppTO_Away', 'oppTO 2022']
+}
+```
+
+### Combining the data frames and saving to desktop
+```{r, eval=FALSE}
+# Call the function to scrape and merge data
+combined_df = scrape_and_merge(urls, new_column_names)
+
+combined_df['Team'] = combined_df['Team'].replace({
+'Miami (OH)' : 'Miami'
+
+})
+# Save the DataFrame to Excel
+desktop_path = "/Users/nathanbresette/Desktop"
+combined_df.to_excel(f'{desktop_path}/findme.xlsx', index=False)
+
+
+
+neutral_input = input("Is it a neutral site game (Yes/No): ")
+
+
+# Drop duplicate team names in hasla
+hasla = hasla.drop_duplicates(subset=['Team'])
+
+# Drop duplicate team names in combined_df
+combined_df = combined_df.drop_duplicates(subset=['Team'])
+
+# Merge the DataFrames based on 'Team'
+merged_df = pd.merge(hasla, combined_df, on='Team', how='inner')
+
+# Save the merged DataFrame to Excel
+desktop_path = "/Users/nathanbresette/Desktop"
+merged_df.to_excel(f'{desktop_path}/merged_data.xlsx', index=False)
+```
+
+
+## Cleaning Data
+All further code performed in R:
+
+Once the data has been combined into one data frame, there are over 100 variables. Using dplyr, 16 columns are selected, renamed for easier readability, mutated to correct variable type (numeric, factor, etc), and a new variable is feauture engineered to split the ranks into three categories of Ranked, Top 50%, and Bottom 50%.
+```{r}
+library(readxl)
+library(tidyverse)
+merged_data <- read_excel("~/Desktop/merged_data.xlsx")
+
+clean_data <- merged_data %>%
+  select(`Unnamed: 0_level_0 Rk`, `Win`, `Loss`, `DEFENSIVE SUMMARY Eff`, `DEFENSIVE SUMMARY 3P%`, `DEFENSIVE SUMMARY FG%`, `DEFENSIVE SUMMARY MR%`, `DEFENSIVE SUMMARY NP%`, FTR_2023, TO_2023, ORB_2023, DRB_2023, p3_2023, `2p_2023`, Pace_2023, TO_2023) %>%
+  rename(
+    Rank = `Unnamed: 0_level_0 Rk`,
+    `Def_Eff` = `DEFENSIVE SUMMARY Eff`,
+    `Def_3P` = `DEFENSIVE SUMMARY 3P%`,
+    `Def_FG` = `DEFENSIVE SUMMARY FG%`,
+    `Def_MR` = `DEFENSIVE SUMMARY MR%`,
+    `Def_NP` = `DEFENSIVE SUMMARY NP%`,
+    Off_FTR = FTR_2023,
+    Off_TO = TO_2023,
+    Off_ORB = ORB_2023,
+    Def_DRB = DRB_2023,
+    Off_3P = p3_2023,
+    Off_2P = `2p_2023`,
+    Pace = Pace_2023
+  ) %>% 
+  mutate(Win = as.numeric(Win),
+         Loss = as.numeric(Loss)) 
+
+clean_data$Rank_Category <- ifelse(clean_data$Rank >= 0 & clean_data$Rank <= 25, "Ranked",
+                                   ifelse(clean_data$Rank > 25 & clean_data$Rank <= 181, "Top 50%", "Bottom 50%"))
+clean_data <- clean_data %>%
+  mutate(Rank_Category = as.factor(Rank_Category))
+```
+ 
+The final data cleaning step is checking total NA values for each variable
+```{r}
+cbind(lapply(lapply(clean_data, is.na), sum))
+``` 
+## Exploratory Analysis
+
+### Correlation and Scatter Plots
+The data exploration begins by looking at the correlation between variables. I created a function to make a correlation plot then if the correlation is above the absolute value of 0.6, it will plot the scatter plot of the two correlated variables. Due to the high correlation in this data, I have limited the output to only two of the scatterplots.	
+```{r}
+library(corrplot)
+
+compute_and_plot_correlation <- function(data, threshold = 0.6) {
+  # Select numeric columns
+  numeric_data <- data[, sapply(data, is.numeric)]
+  
+  # Remove rows with missing values
+  numeric_data <- numeric_data[complete.cases(numeric_data), ]
+  
+  # Compute correlation matrix
+  correlation_matrix <- cor(numeric_data)
+  
+  # Find pairs of variables with correlation above or below the threshold
+  high_correlation_pairs <- which(abs(correlation_matrix) > threshold & upper.tri(correlation_matrix), arr.ind = TRUE)
+  
+  # Create scatter plots for high correlation pairs
+  plots <- list()
+  for (i in 1:nrow(high_correlation_pairs)) {
+    var_x <- rownames(correlation_matrix)[high_correlation_pairs[i, 1]]
+    var_y <- rownames(correlation_matrix)[high_correlation_pairs[i, 2]]
+    
+    plot <- ggplot(data = numeric_data, aes_string(x = var_x, y = var_y)) +
+      geom_point() +
+      labs(title = paste("Scatter Plot of", var_y, "vs", var_x), x = var_x, y = var_y) + 
+      theme_minimal() +
+      theme(plot.title = (element_text(hjust = 0.5)))
+
+    
+    plots[[paste(var_x, var_y, sep = "_")]] <- plot
+  }
+  
+  # Plot correlation matrix
+  corrplot(correlation_matrix, method = "shade", type = "lower", diag = FALSE, addCoef.col = "black", number.cex = 0.5)
+  
+  return(plots)
+}
+
+#Example call to function
+scatter_plots <- compute_and_plot_correlation(clean_data)
+
+for (i in seq_along(scatter_plots)) {
+  if (i > 2) break
+  print(scatter_plots[[i]])
+}
+```
+
+### Distributions - Histograms
+I also made a function to make histograms for all numeric variables to view the distributions. Because all of our variables are numeric, no bar charts were made to view the distribution of categorical variables.
+```{r}
+create_histograms_ggplot <- function(data) {
+  # Get numeric variable names
+  numeric_vars <- names(data)[sapply(data, is.numeric)]
+  
+  # Initialize an empty list to store ggplot objects
+  plots <- list()
+  
+  # Loop through each numeric variable and create a histogram using ggplot
+  for (var in numeric_vars) {
+    # Create ggplot object for histogram
+    plot <- ggplot(data, aes_string(x = var)) +
+      geom_histogram(binwidth = 0.5, fill = "skyblue", color = "black") +
+      labs(title = paste("Histogram of", var), x = var, y = "Frequency") +
+      theme_minimal() +
+      theme(plot.title = (element_text(hjust = 0.5)))
+
+    
+    # Append ggplot object to the list
+    plots[[var]] <- plot
+  }
+  
+  return(plots)
+}
+
+# Example call to function
+hist_plots <- create_histograms_ggplot(clean_data)
+
+
+  print(hist_plots[[2]])
+  print(hist_plots[[3]])
+
+```
+
+## Principal Component Analysis (PCA)
+```{r}
+library(htmlwidgets)
+library(plotly)
+
+X <- subset(clean_data, select = -c(Rank_Category, Win, Loss))
+
+prin_comp <- prcomp(X, center = TRUE, scale. = TRUE)
+```
+
+### Scree Plot
+```{r}
+plot(prin_comp, type = "l", main = "Scree Plot")
+```
+
+### 3D PCA
+```{r}
+summ <- summary(prin_comp)
+summ$importance[2,]
+
+components <- prin_comp[["x"]]
+components <- data.frame(components)
+components$PC2 <- -components$PC2
+components$PC3 <- -components$PC3
+components = cbind(components, clean_data$Rank_Category)
+
+# Combine components with Ranked labels
+components <- cbind(components, Rank_Category = clean_data$Rank_Category)
+
+# Create Plotly figure
+fig <- plot_ly(components, x = ~PC1, y = ~PC2, z = ~PC3, color = ~Rank_Category,
+               colors = c('#636EFA','#EF553B','#00CC96'), type = "scatter3d", mode = "markers",
+               marker = list(size = 4))
+
+
+# Customize layout
+fig <- fig %>% layout(
+  title = "61.67% Variance Explained",
+  scene = list(bgcolor = "#e5ecf6")
+)
+
+# Show the plot
+fig
+saveWidget(fig, "interactive_plot.html")
+```
+
+## Neural Network
+```{r}
+library(neuralnet)
+library(caret)
+library(tidymodels)
+
+nndata <- clean_data 
+set.seed(123)
+# Put 3/4 of the data into the training set 
+data_split <- initial_split(nndata, prop = 3/4, strata = Rank_Category)
+
+# Create data frames for the two sets:
+train_data <- training(data_split)
+test_data  <- testing(data_split)
+
+
+NN <- neuralnet(Rank_Category ~ ., train_data, hidden = c(5,3), linear.output = TRUE)
+plot(NN, rep = "best")
+```
+### Confusion Matrix
+```{r}
+predicted_classes <- predict(NN, test_data)
+# Extract predicted class labels
+predicted_classes <- max.col(predicted_classes)
+
+# Convert the indices to class labels
+predicted_classes <- levels(test_data$Rank_Category)[predicted_classes]
+actual_classes <- test_data$Rank_Category
+
+predicted_classes <- factor(predicted_classes, levels = levels(actual_classes))
+
+# length(predicted_classes)
+# print(predicted_classes)
+
+# Extract actual class labels from the test data
+# length(actual_classes)
+# print(actual_classes)
+
+# Create a confusion matrix
+confusionMatrix(predicted_classes, test_data$Rank_Category)
+```
+
+
+## XGBoost Classification Model
+```{r}
+#libs
+library(janitor)
+library(tidymodels)
+library(caret)
+library(pROC)
+library(data.table)
+library(kableExtra)
+```
+
+
+### Splitting into Training/Testing
+```{r}
+DATA <- clean_data %>% 
+  select(-Rank)
+
+set.seed(123)
+DATA_SPLIT <- DATA %>%
+  initial_split(strata = Rank_Category)
+
+DATA_TRAIN <- training(DATA_SPLIT)
+DATA_TEST <- testing(DATA_SPLIT)
+
+set.seed(234)
+DATA_folds <- vfold_cv(DATA_TRAIN, strata = Rank_Category)
+DATA_folds
+```
+
+### Recipe
+```{r}
+DATA_rec <-
+  recipe(Rank_Category ~ ., data = DATA_TRAIN) %>%
+  step_unknown(all_nominal_predictors()) %>%
+  step_dummy(all_nominal_predictors(), one_hot = TRUE)
+
+prep(DATA_rec) # checking prep
+```
+
+
+### Tuning Model
+```{r}
+xgb_spec <-
+  boost_tree(
+    trees = tune(),
+    min_n = tune(),
+    mtry = tune(),
+    tree_depth = tune(),
+    learn_rate = tune(),
+    loss_reduction = tune()) %>%
+  set_engine("xgboost") %>%
+  set_mode("classification")
+
+#workflow
+xgb_workfl <- workflow(DATA_rec, xgb_spec)
+```
+
+### Race Anova 
+```{r}
+library(finetune)
+doParallel::registerDoParallel()
+
+set.seed(345)
+xgb_rs <- tune_race_anova(
+  xgb_workfl,
+  resamples = DATA_folds,
+  grid = 20,
+  metrics = metric_set(accuracy),
+  control = control_race(verbose_elim = TRUE)
+)
+```
+
+### Comparing Models
+```{r}
+anova <- plot_race(xgb_rs)
+
+anova +
+  labs(title = "Model Race ANOVA",
+       y = "Model Accuracy") +
+  theme_minimal() +
+  theme(plot.title = (element_text(hjust = 0.5)))
+
+```
+
+### Best Model
+```{r}
+show_best(xgb_rs)
+```
+### Metrics
+```{r}
+xgb_last <- xgb_workfl %>%
+  finalize_workflow(select_best(xgb_rs, metric = "accuracy")) %>%
+  last_fit(DATA_SPLIT)
+
+xgb_last$.metrics
+```
+
+### Confusion Matrix
+```{r}
+DATA_pred <- collect_predictions(xgb_last)$.pred_class
+
+DATA_act <- DATA_TEST$Rank_Category
+
+confusionMatrix(DATA_pred, DATA_act)
+```
+
+### VIP
+```{r}
+library(vip)
+vip <- extract_workflow(xgb_last) %>%
+  extract_fit_parsnip() %>%
+  vip(geom = "col", num_features = 10, mapping = aes(fill = Variable))
+vip 
+```
+
+
+
+
+
+
