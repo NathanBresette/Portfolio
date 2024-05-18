@@ -1,0 +1,27 @@
+---
+title: "CourseKata"
+author: "Nathan Bresette, Dane Winterboer, Evan AuBuchon, Severin Hussey"
+date: "2024-04-6"
+categories: [Webscraping, PCA, Neural Network, XGBoost, ggplot, plotly]
+image: "kata.jpg"
+output:
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+format:
+  html:
+    code-link: true
+    code-fold: true
+    code-overflow: wrap
+    warning: false
+---
+
+
+
+
+<iframe 
+  width="800" 
+  height="500" 
+  src="CourseKata.pdf">
+</iframe>

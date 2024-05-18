@@ -6,10 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Nathan Bresette">
-<meta name="dcterms.date" content="2023-01-02">
+<meta name="author" content="Nathan Bresette, Dane Winterboer, Evan AuBuchon, Severin Hussey">
+<meta name="dcterms.date" content="2024-03-30">
 
-<title>Nathan Bresette - TidyTuesday: Retail Sales data analysis with Plotly in R</title>
+<title>Nathan Bresette - Traffic Impact</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -35,6 +35,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-html/quarto.js"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
@@ -72,7 +73,7 @@ ul.task-list li input[type="checkbox"] {
 <link rel="stylesheet" href="../styles.css">
 </head>
 
-<body class="nav-fixed fullcontent">
+<body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -120,42 +121,55 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        
+    </div>
 <!-- main -->
-<div class="quarto-about-jolla content">
-  <img src="nathan.jpg" class="about-image
-  round " style="height: 100px; width: 100px;">
- <header id="title-block-header" class="quarto-title-block default">
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">TidyTuesday: Retail Sales data analysis with Plotly in R</h1>
+<h1 class="title">Traffic Impact</h1>
   <div class="quarto-categories">
-    <div class="quarto-category">code</div>
-    <div class="quarto-category">analysis</div>
-    <div class="quarto-category">visualization</div>
     <div class="quarto-category">plotly</div>
+    <div class="quarto-category">ggplot</div>
+    <div class="quarto-category">t-tests</div>
+    <div class="quarto-category">CART</div>
   </div>
   </div>
+
+
+
 <div class="quarto-title-meta">
+
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>Nathan Bresette </p>
+             <p>Nathan Bresette, Dane Winterboer, Evan AuBuchon, Severin Hussey </p>
           </div>
   </div>
+    
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">January 2, 2023</p>
+      <p class="date">March 30, 2024</p>
     </div>
   </div>
+  
+    
   </div>
-</header><main class="content" id="quarto-document-content">
-<p>In this post, I will analyze the TidyTuesday dataset about Retail Sales …</p>
+  
 
 
-</main>  
-</div>
- <!-- /main -->
+</header>
+
+
+<iframe width="800" height="500" src="powerpoint.pdf">
+</iframe>
+
+
+
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -176,6 +190,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
   const isCodeAnnotation = (el) => {
     for (const clz of el.classList) {
       if (clz.startsWith('code-annotation-')) {                     

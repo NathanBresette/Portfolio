@@ -1,0 +1,25 @@
+---
+title: "Traffic Impact"
+author: "Nathan Bresette, Dane Winterboer, Evan AuBuchon, Severin Hussey"
+date: "2024-03-30"
+categories: [plotly, ggplot, t-tests, CART]
+image: "traffic.jpg"
+output:
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+format:
+  html:
+    code-link: true
+    code-fold: true
+    code-overflow: wrap
+    warning: false
+---
+
+
+<iframe 
+  width="800" 
+  height="500" 
+  src="powerpoint.pdf">
+</iframe>

@@ -1,24 +1,17 @@
 [
   {
-    "objectID": "surveys/index.html",
-    "href": "surveys/index.html",
-    "title": "TidyTuesday: Retail Sales data analysis with Plotly in R",
+    "objectID": "aboutme_index.html",
+    "href": "aboutme_index.html",
+    "title": "Nathan Bresette",
     "section": "",
-    "text": "In this post, I will analyze the TidyTuesday dataset about Retail Sales …"
-  },
-  {
-    "objectID": "datafest/index.html",
-    "href": "datafest/index.html",
-    "title": "TidyTuesday: Retail Sales data analysis with Plotly in R",
-    "section": "",
-    "text": "In this post, I will analyze the TidyTuesday dataset about Retail Sales I am curious how much I can type before ashfojha kajf akjdsfkjdf third line"
+    "text": "I am a senior at Truman State University, majoring in Statistics with a concentration in Data Science and a minor in Mathematics. Passionate about uncovering insights from data, I am dedicated to leveraging statistical techniques and data analysis tools to solve real-world problems. With a strong foundation in mathematics and a keen interest in data science, I am enthusiastic about contributing to projects that drive innovation and make a positive impact.\n \nIn my portfolio, you’ll find a diverse range of projects, including analyses, visualizations, and applications that showcase my skills and experiences. From developing R packages to conducting consulting projects and participating in DataFest competitions, I’ve gained practical knowledge and hands-on experience in various aspects of data science. I invite you to explore my portfolio to learn more about my work and how I can contribute to your projects and initiatives."
   },
   {
     "objectID": "datafest.html",
     "href": "datafest.html",
-    "title": "Consulting",
+    "title": "DataFest",
     "section": "",
-    "text": "TidyTuesday: Retail Sales data analysis with Plotly in R\n\n\n\n\n\n\ncode\n\n\nanalysis\n\n\nvisualization\n\n\nplotly\n\n\n\n\n\n\n\n\n\nJan 2, 2023\n\n\nNathan Bresette\n\n\n\n\n\n\nNo matching items"
+    "text": "DataFest is a celebration of data in which teams of undergraduates work “around the clock” to discover and share meaning in a large, rich, and complex data set. It is a nationally coordinated weekend-long data analysis competition and challenges students to find their own story to tell with the data that is meaningful to the data donor.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nTraffic Impact\n\n\n\n\n\n\nplotly\n\n\nggplot\n\n\nt-tests\n\n\nCART\n\n\n\n\n\n\n\n\n\nMar 30, 2024\n\n\nNathan Bresette, Dane Winterboer, Evan AuBuchon, Severin Hussey\n\n\n\n\n\n\n\n\n\n\n\n\nCourseKata\n\n\n\n\n\n\nWebscraping\n\n\nPCA\n\n\nNeural Network\n\n\nXGBoost\n\n\nggplot\n\n\nplotly\n\n\n\n\n\n\n\n\n\nApr 6, 2024\n\n\nNathan Bresette, Dane Winterboer, Evan AuBuchon, Severin Hussey\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "posts/NCAA Basketball/basketball.html",
@@ -81,7 +74,28 @@
     "href": "consulting.html",
     "title": "Consulting",
     "section": "",
-    "text": "TidyTuesday: Retail Sales data analysis with Plotly in R\n\n\n\n\n\n\ncode\n\n\nanalysis\n\n\nvisualization\n\n\nplotly\n\n\n\n\n\n\n\n\n\nJan 2, 2023\n\n\nNathan Bresette\n\n\n\n\n\n\nNo matching items"
+    "text": "During my time at Truman, I’ve engaged in three rewarding consulting experiences through STAT 310 - Data Collection & Statistical Communication and STAT 392 - Center for Applied Statistics and Evaluation. These consulting endeavors involved extensive client interaction, survey design, data analysis, and the delivery of comprehensive presentations."
+  },
+  {
+    "objectID": "consulting.html#international-admissions-office",
+    "href": "consulting.html#international-admissions-office",
+    "title": "Consulting",
+    "section": "International Admissions Office",
+    "text": "International Admissions Office\nSTAT 310 afforded me the opportunity to collaborate with two peers on a semester-long consulting project for the International Admissions Office. Our primary objective was to assist our client in understanding the factors driving international students to choose Truman. This involved delving into various aspects such as the admissions process, initial awareness of the university, decision-making factors, and current perceptions. Our findings were compiled into a 22-page report supplemented with insightful data visualizations, which we presented to our client in a concise and impactful 15-minute presentation."
+  },
+  {
+    "objectID": "consulting.html#compliance-office",
+    "href": "consulting.html#compliance-office",
+    "title": "Consulting",
+    "section": "Compliance Office",
+    "text": "Compliance Office\nSTAT 392 is a semester long class where we managed multiple client projects simultaneously, ensured clear communication and meet all deadlines. The first client was for Truman State University’s Institutional Compliance Office. The objective of the survey was to evaluate the office’s effectiveness in meeting the needs of the university community and to investigate areas that could benefit from further development. This was done through creating a survey, analyzing the results, and compiling a report for the office. I joined this project after the survey had been created so my main task was analyzing the survey and communicate results. After, a paper was compiled which focused on the respondents based on whether they have or have not interacted with the office."
+  },
+  {
+    "objectID": "consulting.html#voice-diagnostics-survey",
+    "href": "consulting.html#voice-diagnostics-survey",
+    "title": "Consulting",
+    "section": "Voice Diagnostics Survey",
+    "text": "Voice Diagnostics Survey\nAnother project in STAT 392 was creating a nationwide survey about the protocols used for instrumental assessment of voice. I had the lead in this project and my clients were a professor and a graduate student. Unlike the past surveys, I had no background in protocols used for instrumental assessment of voice. This was a new challenge for me to become familiar enough in the field to help my clients get the best results. Although this project is still on going, with the help of my clients, we created a nationwide survey after several meetings of tweaking the survey, adding sections, and getting the best ordering of questions. This survey will be sent out soon and will be analzed after"
   },
   {
     "objectID": "posts/Text Analysis/text_analysis.html",
@@ -131,12 +145,5 @@
     "title": "Projects",
     "section": "",
     "text": "NCAA Basketball Analysis\n\n\n\n\n\n\nWebscraping\n\n\nPCA\n\n\nNeural Network\n\n\nXGBoost\n\n\nggplot\n\n\nplotly\n\n\n\n\n\n\n\n\n\nApr 12, 2024\n\n\nNathan Bresette\n\n\n\n\n\n\n\n\n\n\n\n\nText Classification and Sentiment Analysis\n\n\n\n\n\n\ncode\n\n\nanalysis\n\n\nvisualization\n\n\nplotly\n\n\n\n\n\n\n\n\n\nJan 2, 2023\n\n\nNathan Bresette\n\n\n\n\n\n\nNo matching items"
-  },
-  {
-    "objectID": "aboutme_index.html",
-    "href": "aboutme_index.html",
-    "title": "Nathan Bresette",
-    "section": "",
-    "text": "I am a senior at Truman State University, majoring in Statistics with a concentration in Data Science and a minor in Mathematics. Passionate about uncovering insights from data, I am dedicated to leveraging statistical techniques and data analysis tools to solve real-world problems. With a strong foundation in mathematics and a keen interest in data science, I am enthusiastic about contributing to projects that drive innovation and make a positive impact.\n \nIn my portfolio, you’ll find a diverse range of projects, including analyses, visualizations, and applications that showcase my skills and experiences. From developing R packages to conducting consulting projects and participating in DataFest competitions, I’ve gained practical knowledge and hands-on experience in various aspects of data science. I invite you to explore my portfolio to learn more about my work and how I can contribute to your projects and initiatives."
   }
 ]

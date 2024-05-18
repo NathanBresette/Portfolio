@@ -1,12 +1,18 @@
 ---
 title: "Consulting"
-listing:
-  contents: surveys
-  sort: "date desc"
-  type: default
-  categories: true
-  sort-ui: false
-  filter-ui: false
 page-layout: full
-title-block-banner: true
+title-block-banner: FALSE
 ---
+During my time at Truman, I've engaged in three rewarding consulting experiences through STAT 310 - Data Collection & Statistical Communication and STAT 392 - Center for Applied Statistics and Evaluation. These consulting endeavors involved extensive client interaction, survey design, data analysis, and the delivery of comprehensive presentations.
+
+## International Admissions Office
+
+STAT 310 afforded me the opportunity to collaborate with two peers on a semester-long consulting project for the International Admissions Office. Our primary objective was to assist our client in understanding the factors driving international students to choose Truman. This involved delving into various aspects such as the admissions process, initial awareness of the university, decision-making factors, and current perceptions. Our findings were compiled into a 22-page report supplemented with insightful data visualizations, which we presented to our client in a concise and impactful 15-minute presentation.
+
+## Compliance Office
+
+STAT 392 is a semester long class where we managed multiple client projects simultaneously, ensured clear communication and meet all deadlines. The first client was for Truman State University's Institutional Compliance Office. The objective of the survey was to evaluate the office’s effectiveness in meeting the needs of the university community and to investigate areas that could benefit from further development. This was done through creating a survey, analyzing the results, and compiling a report for the office. I joined this project after the survey had been created so my main task was analyzing the survey and communicate results. After, a paper was compiled which focused on the respondents based on whether they have or have not interacted with the office.
+
+## Voice Diagnostics Survey
+
+Another project in STAT 392 was creating a nationwide survey about the protocols used for instrumental assessment of voice. I had the lead in this project and my clients were a professor and a graduate student. Unlike the past surveys, I had no background in protocols used for instrumental assessment of voice. This was a new challenge for me to become familiar enough in the field to help my clients get the best results. Although this project is still on going, with the help of my clients, we created a nationwide survey after several meetings of tweaking the survey, adding sections, and getting the best ordering of questions. This survey will be sent out soon and will be analzed after

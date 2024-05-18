@@ -1,12 +1,14 @@
 ---
-title: "Consulting"
+title: "DataFest"
 listing:
-  contents: datafest
-  sort: "date desc"
+  contents: datafest_file
+  sort: "date asc"
   type: default
   categories: true
   sort-ui: false
   filter-ui: false
 page-layout: full
-title-block-banner: true
+title-block-banner: false
 ---
+
+DataFest is a celebration of data in which teams of undergraduates work "around the clock" to discover and share meaning in a large, rich, and complex data set. It is a nationally coordinated weekend-long data analysis competition and challenges students to find their own story to tell with the data that is meaningful to the data donor.

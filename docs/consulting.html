@@ -30,8 +30,6 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -68,65 +66,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
 
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
-
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -134,7 +74,7 @@ window.Quarto = {
 <body class="nav-fixed">
 
 <div id="quarto-search-results"></div>
-  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+  <header id="quarto-header" class="headroom fixed-top">
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
@@ -176,88 +116,59 @@ window.Quarto = {
     </nav>
 </header>
 <!-- content -->
-<header id="title-block-header" class="quarto-title-block default page-columns page-full">
-  <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-page-left">
-      <h1 class="title">Consulting</h1>
-                      </div>
-  </div>
-    
-  
-  <div class="quarto-title-meta column-page-left">
-
-      
-    
-      
-    </div>
-    
-  
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(1)</span></div><div class="category" data-category="analysis">analysis <span class="quarto-category-count">(1)</span></div><div class="category" data-category="code">code <span class="quarto-category-count">(1)</span></div><div class="category" data-category="plotly">plotly <span class="quarto-category-count">(1)</span></div><div class="category" data-category="visualization">visualization <span class="quarto-category-count">(1)</span></div></div></div>
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#international-admissions-office" id="toc-international-admissions-office" class="nav-link active" data-scroll-target="#international-admissions-office">International Admissions Office</a></li>
+  <li><a href="#compliance-office" id="toc-compliance-office" class="nav-link" data-scroll-target="#compliance-office">Compliance Office</a></li>
+  <li><a href="#voice-diagnostics-survey" id="toc-voice-diagnostics-survey" class="nav-link" data-scroll-target="#voice-diagnostics-survey">Voice Diagnostics Survey</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
-<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Consulting</h1>
+</div>
 
 
 
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
 
 
+</header>
 
 
+<p>During my time at Truman, I’ve engaged in three rewarding consulting experiences through STAT 310 - Data Collection &amp; Statistical Communication and STAT 392 - Center for Applied Statistics and Evaluation. These consulting endeavors involved extensive client interaction, survey design, data analysis, and the delivery of comprehensive presentations.</p>
+<section id="international-admissions-office" class="level2">
+<h2 class="anchored" data-anchor-id="international-admissions-office">International Admissions Office</h2>
+<p>STAT 310 afforded me the opportunity to collaborate with two peers on a semester-long consulting project for the International Admissions Office. Our primary objective was to assist our client in understanding the factors driving international students to choose Truman. This involved delving into various aspects such as the admissions process, initial awareness of the university, decision-making factors, and current perceptions. Our findings were compiled into a 22-page report supplemented with insightful data visualizations, which we presented to our client in a concise and impactful 15-minute presentation.</p>
+</section>
+<section id="compliance-office" class="level2">
+<h2 class="anchored" data-anchor-id="compliance-office">Compliance Office</h2>
+<p>STAT 392 is a semester long class where we managed multiple client projects simultaneously, ensured clear communication and meet all deadlines. The first client was for Truman State University’s Institutional Compliance Office. The objective of the survey was to evaluate the office’s effectiveness in meeting the needs of the university community and to investigate areas that could benefit from further development. This was done through creating a survey, analyzing the results, and compiling a report for the office. I joined this project after the survey had been created so my main task was analyzing the survey and communicate results. After, a paper was compiled which focused on the respondents based on whether they have or have not interacted with the office.</p>
+</section>
+<section id="voice-diagnostics-survey" class="level2">
+<h2 class="anchored" data-anchor-id="voice-diagnostics-survey">Voice Diagnostics Survey</h2>
+<p>Another project in STAT 392 was creating a nationwide survey about the protocols used for instrumental assessment of voice. I had the lead in this project and my clients were a professor and a graduate student. Unlike the past surveys, I had no background in protocols used for instrumental assessment of voice. This was a new challenge for me to become familiar enough in the field to help my clients get the best results. Although this project is still on going, with the help of my clients, we created a nationwide survey after several meetings of tweaking the survey, adding sections, and getting the best ordering of questions. This survey will be sent out soon and will be analzed after</p>
 
 
-<div class="quarto-listing quarto-listing-container-default" id="listing-listing">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="code,analysis,visualization,plotly" data-listing-date-sort="1672639200000" data-listing-file-modified-sort="1715837790416" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="13">
-<div class="thumbnail">
-<p><a href="./surveys/index.html" class="no-external"></a></p><a href="./surveys/index.html" class="no-external">
-<p><img src="./surveys/nathan.jpg" class="thumbnail-image"></p>
-</a><p><a href="./surveys/index.html" class="no-external"></a></p>
-</div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./surveys/index.html" class="no-external">TidyTuesday: Retail Sales data analysis with Plotly in R</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./surveys/index.html" class="no-external"></a>
-</div>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('code'); return false;">
-code
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('analysis'); return false;">
-analysis
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('visualization'); return false;">
-visualization
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('plotly'); return false;">
-plotly
-</div>
-</div>
-<div class="listing-description">
-<a href="./surveys/index.html" class="no-external">In this post, I will analyze the TidyTuesday dataset about Retail Sales …</a>
-</div>
-</div>
-<div class="metadata">
-<a href="./surveys/index.html" class="no-external">
-<div class="listing-date">
-Jan 2, 2023
-</div>
-<div class="listing-author">
-Nathan Bresette
-</div>
-</a>
-</div>
-</div>
-</div>
-<div class="listing-no-matching d-none">
-No matching items
-</div>
-</div></main> <!-- /main -->
+</section>
+
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
