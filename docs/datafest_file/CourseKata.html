@@ -37,10 +37,10 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -126,7 +126,7 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#overview-of-project" id="toc-overview-of-project" class="nav-link active" data-scroll-target="#overview-of-project">Overview of Project</a></li>
+  <li><a href="#we-won" id="toc-we-won" class="nav-link active" data-scroll-target="#we-won">We Won!</a></li>
   </ul>
 </nav>
     </div>
@@ -137,12 +137,10 @@ ul.task-list li input[type="checkbox"] {
 <div class="quarto-title">
 <h1 class="title">CourseKata</h1>
   <div class="quarto-categories">
-    <div class="quarto-category">Webscraping</div>
-    <div class="quarto-category">PCA</div>
-    <div class="quarto-category">Neural Network</div>
+    <div class="quarto-category">Data Cleaning</div>
     <div class="quarto-category">XGBoost</div>
-    <div class="quarto-category">ggplot</div>
-    <div class="quarto-category">plotly</div>
+    <div class="quarto-category">Presentation</div>
+    <div class="quarto-category">R</div>
   </div>
   </div>
 
@@ -172,14 +170,15 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="overview-of-project" class="level2">
-<h2 class="anchored" data-anchor-id="overview-of-project">Overview of Project</h2>
-<p>Our initial area of interest upon reception of the data was the subjective student responses in the checkpoints_pulse table, as the developers of CourseKata, Jim Stigler and Ji Son, were primarily interested in the students’ opinions of the textbook. Unfortunately, this data proved unfruitful, as there was no variation in response for any factor we could find. Since subjective measures had no analytical value, we pivoted to looking at objective measures, starting with the EOC variable in the checkpoints_eoc table, which is the final percentage of questions each student answered correctly on the end of chapter (EOC) quiz. This data was much more diverse and had some interesting potential factors that might influence it. We ended up modifying the EOC data into a binary pass/fail variable with a division at 0.6 (for a 60% pass rate) that focused on book College(ABC).</p>
+<p>24 hour analysis on CourseKata, an online book on statistics. Data cleaning, exploratory data analysis, XGBoost, and suggestions for improvement ## Overview of Project Our initial area of interest upon reception of the data was the subjective student responses in the checkpoints_pulse table, as the developers of CourseKata, Jim Stigler and Ji Son, were primarily interested in the students’ opinions of the textbook. Unfortunately, this data proved unfruitful, as there was no variation in response for any factor we could find. Since subjective measures had no analytical value, we pivoted to looking at objective measures, starting with the EOC variable in the checkpoints_eoc table, which is the final percentage of questions each student answered correctly on the end of chapter (EOC) quiz. This data was much more diverse and had some interesting potential factors that might influence it. We ended up modifying the EOC data into a binary pass/fail variable with a division at 0.6 (for a 60% pass rate) that focused on book College(ABC).</p>
 <p>Our group used a gradient-boosted classification tree to chunk down the variables due to the high cardinality so we could use it as an exploratory model. The model started with 20 gradient classification models and picked the best one utilizing racing anova. The final model had 1649 trees. The importance of variables was calculated by how often they were utilized in the final fitted model to make a decision. The important variables were sum of engagement, average attempt, institution, and chapter. The model produced an AUC of 0.847 with an accuracy of 78.3%.</p>
 <p>Of the top 4 variables our model found to be important, two were student-determined variables and two were environment-determined variables. The total engagement time as well as the average attempts per question, the latter of which we engineered ourselves based on n_possible and n_attempted, were the two most influential variables regarding student pass/fail rate, and were the two student-determined variables. Students who obtained over a 60% on the EOC quizzes spent more time utilizing the textbook than students who obtained less than a 60%. Additionally, students with an average attempts per question over 3 were more likely to have an EOC score below 60%, with less students being over that threshold the higher the average attempts were. The book version for College (ABC) is important to the pass/fail rate of the students with more students improving with newer book versions. There is a large variance in pass/fail rates for institutions with some passing at 75% and others failing at 75%.</p>
 <p>Our next steps, if there was more time, would be to remove or rework the subjective “pulse” questions, looking into different book versions, and investigate discrepancies amongst institutions.</p>
 <iframe width="800" height="500" src="CourseKata.pdf">
 </iframe>
+<section id="we-won" class="level3">
+<h3 class="anchored" data-anchor-id="we-won">We Won!</h3>
+<p>Out of 20 teams, we were able to take the prize of best in show! <iframe width="800" height="500" src="data_win.jpeg"> </iframe></p>
 
 
 </section>

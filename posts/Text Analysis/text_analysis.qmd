@@ -1,8 +1,8 @@
 ---
 title: "Text Classification and Sentiment Analysis"
-date: 01-2-2023 
+date: 05-17-2023 
 author: Nathan Bresette 
-categories: [code, analysis, visualization, plotly]
+categories: [text classification, text analysis, R]
 image: "LL_wordcloud.jpg"
 
 output:

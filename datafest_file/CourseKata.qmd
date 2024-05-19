@@ -2,7 +2,7 @@
 title: "CourseKata"
 author: "Nathan Bresette, Dane Winterboer, Evan AuBuchon, Severin Hussey"
 date: "2024-04-6"
-categories: [Webscraping, PCA, Neural Network, XGBoost, ggplot, plotly]
+categories: [Data Cleaning, XGBoost, Presentation, R]
 image: "kata.jpg"
 output:
   html_document:
@@ -16,7 +16,7 @@ format:
     code-overflow: wrap
     warning: false
 ---
-
+24 hour analysis on CourseKata, an online book on statistics. Data cleaning, exploratory data analysis, XGBoost, and suggestions for improvement
 ## Overview of Project
   Our initial area of interest upon reception of the data was the subjective student responses in the checkpoints_pulse table, as the developers of CourseKata, Jim Stigler and Ji Son, were primarily interested in the students’ opinions of the textbook. Unfortunately, this data proved unfruitful, as there was no variation in response for any factor we could find. Since subjective measures had no analytical value, we pivoted to looking at objective measures, starting with the EOC variable in the checkpoints_eoc table, which is the final percentage of questions each student answered correctly on the end of chapter (EOC) quiz. This data was much more diverse and had some interesting potential factors that might influence it. We ended up modifying the EOC data into a binary pass/fail variable with a division at 0.6 (for a 60% pass rate) that focused on book College(ABC).
 
@@ -33,4 +33,12 @@ The book version for College (ABC) is important to the pass/fail rate of the stu
   width="800" 
   height="500" 
   src="CourseKata.pdf">
+</iframe>
+
+### We Won!
+Out of 20 teams, we were able to take the prize of best in show!
+<iframe 
+  width="800" 
+  height="500" 
+  src="data_win.jpeg">
 </iframe>

@@ -31,6 +31,6 @@ website:
 
 format:
   html:
-    theme: Cyborg
+    theme: Pulse
     css: styles.css
     toc: true

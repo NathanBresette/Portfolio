@@ -2,7 +2,7 @@
 title: "Traffic Impact"
 author: "Nathan Bresette, Dane Winterboer, Evan AuBuchon, Severin Hussey"
 date: "2024-03-30"
-categories: [plotly, ggplot, t-tests, CART]
+categories: [Data Cleaning, CART, R, Presentation]
 image: "traffic.jpg"
 output:
   html_document:
