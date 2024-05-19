@@ -22,7 +22,8 @@ Created text classification and sentiment analysis model to automate the process
 
 
 ## Abstract
-This project was done during my intership at Lifeline Pregnancy. During the school year, they go to schools across Missouri and give a 'Pure Freedom' talk to the students. At the end of the talk, the students fill out a survey which has a free response question. The free response question is categorized into one of the four categories: Educator, Program, Content, or Other. The sentiment is then calculated as positive, negative, neutrall, or question. Before this model was created, all classification and sentiment was performed individually for every free response. Because the categories and sentiment are different than any pre-existing model, I had to make my own. To preserve the data and information of the clinic, Educators names have been replaced
+This project was done during my intership at Lifeline Pregnancy. During the school year, they go to schools across Missouri and give a 'Pure Freedom' talk to the students. At the end of the talk, the students fill out a survey which has a free response question. The free response question is categorized into one of the four categories: Educator, Program, Content, or Other. The sentiment is then calculated as positive, negative, neutrall, or question. Before this model was created, all classification and sentiment was performed individually for every free response. Because the categories and sentiment are different than any pre-existing model, I had to make my own. To preserve the data and information of the clinic, some information will not be available
+
 
 ## Data Cleaning
 The data cleaning process involves anticipating and correcting student typos, standardizing all words to lowercase, and eliminating pluralizations, with the function addressing some of these tasks. 
@@ -53,16 +54,20 @@ pfcomments <- com %>%
 ```
 
 The function is now created and preprocesses text data by converting it to lowercase, removing possessive apostrophes ('s), and then categorizes the comments based on the presence of certain keywords. If a comment contains only a smiley face ":)", it is labeled as "Other". Comments containing the word "sex" are labeled as "Remove". Additionally, comments containing words like "like", "liked", "love", or "loved" are also labeled as "Remove". For other comments, it calculates the frequency of specific words related to educational programs, educators, and content, then assigns a label ("Educator", "Program", "Content", or "Other") based on the word frequencies and the length of the comment. The words that were removed are often split between categories so an individual still reviews them.
+
+Specific related words will not be shown for educator, program, or content to preserve some information
+```{r, echo=FALSE}
+  educator_words <- c("jaclyn","ryan", "ryan", "hanley", "hanley","lynae", "lynae","mcfarland", "mcfarland", "jackson", "jackson", "jacks", "page", "margo", "margo","staiger", "amy", "posterick", "she", "he", "his", "her","they", "guys","man", "guy","girl", "woman", "y’all", "yall",  "yourself","bro","good", "job", "good job", "did great", "great work", "great job","speakers", "teacher","teacher", "teachers", "teaching","educator", "educators", "instructor", "instructor", "instructor", "instructors","speaker", "awesome", "awsome", "fun", "sweet", "friendly","personal", "story", "stories", "talk")
+  program_words <- c("learned", "sense", "it", "this", "sex", "sexual", "health", "thank", "thank","thanks", "thanks", "thx", "program", "lesson", "lessons","time", "good", "fun", "presentation", "know", "talk", "course", "educational", "class", "liked")
+  content_words <- c("relationship", "relation ships","relationships", "std", "sti", "stds", "stis", "body", "anatomy","porn", "pornography", "baby", "baby belly", "safe","sexual", "butterfly effect", "pregnancy", "pregnancies","pregnant", "boundary", "boundaries", "birth control", "condom", "plan b","toxic", "puberty", "penis", "cock", "rape", "menstri")
+```
+
 ```{r}
 # Define preprocess_and_extract_features function
 preprocess_and_extract_features <- function(comment, label, words_count) {
   # Convert text to lowercase
   comment <- tolower(comment)
   comment <- gsub("'s", "", comment) 
-
-  educator_words <- c("jaclyn","ryan", "ryan", "hanley", "hanley","lynae", "lynae","mcfarland", "mcfarland", "jackson", "jackson", "jacks", "page", "margo", "margo","staiger", "amy", "posterick", "she", "he", "his", "her","they", "guys","man", "guy","girl", "woman", "y’all", "yall",  "yourself","bro","good", "job", "good job", "did great", "great work", "great job","speakers", "teacher","teacher", "teachers", "teaching","educator", "educators", "instructor", "instructor", "instructor", "instructors","speaker", "awesome", "awsome", "fun", "sweet", "friendly","personal", "story", "stories", "talk")
-  program_words <- c("learned", "sense", "it", "this", "sex", "sexual", "health", "thank", "thank","thanks", "thanks", "thx", "program", "lesson", "lessons","time", "good", "fun", "presentation", "know", "talk", "course", "educational", "class", "liked")
-  content_words <- c("relationship", "relation ships","relationships", "std", "sti", "stds", "stis", "body", "anatomy","porn", "pornography", "baby", "baby belly", "safe","sexual", "butterfly effect", "pregnancy", "pregnancies","pregnant", "boundary", "boundaries", "birth control", "condom", "plan b","toxic", "puberty", "penis", "cock", "rape", "menstri")
 
 program_count <- sum(sapply(program_words, function(word) grepl(paste0("\\b", word, "\\b"), comment, ignore.case = TRUE)))
 educator_count <- sum(sapply(educator_words, function(word) grepl(paste0("\\b", word, "\\b"), comment, ignore.case = TRUE)))
@@ -183,7 +188,7 @@ tidycom %>%
 # Apply sentiment analysis using the AFINN lexicon
 sentiment_scores <- pfcomments %>%
   mutate(text = comments) %>%
-  unnest_tokens(word, text, token = "regex") %>%
+  unnest_tokens(word, text) %>%
   
   left_join(get_sentiments("afinn"), by = "word") %>%  # Use left_join to preserve all rows in pfcomments
   group_by(comments) %>%
@@ -198,16 +203,6 @@ sentiment_scores <- sentiment_scores %>%
     TRUE ~ "Neutral"
   ))
 
-# # Classify questions
-# question_words <- c("what", "when", "where", "who", "whom", "which", "whose", "why", "how")
-# sentiment_scores <- sentiment_scores %>%
-#   mutate(is_question = if_else(
-#     any(str_to_lower(comments) %in% question_words),
-#     "Yes",
-#     "No"
-#   ))
-# table(sentiment_scores$is_question)
-# Visualize sentiments and questions
 sentiment_scores %>%
   ggplot(aes(sentiment, fill = sentiment)) +
   geom_bar() +
@@ -221,12 +216,65 @@ sentiment_scores %>%
 ### Bar Chart of Sentiments
 ```{r}
 pfcomments %>%
+  filter(sentiments != "Question") %>%  # Exclude 'question' sentiments
   ggplot(aes(sentiments, fill = sentiments)) +
   geom_bar() +
   labs(title = "Sentiment Analysis of Comments")
 ```
 
+
+```{r}
+library(dplyr)
+library(tidytext)
+library(ggplot2)
+library(caret) # For confusionMatrix
+
+# Add an identifier to each comment
+pfcomments <- pfcomments %>%
+  mutate(comment_id = row_number())
+
+# Apply sentiment analysis using the AFINN lexicon
+sentiment_scores <- pfcomments %>%
+  mutate(text = comments) %>%
+  unnest_tokens(word, text) %>%
+  left_join(get_sentiments("afinn"), by = "word") %>%
+  group_by(comment_id, comments) %>%
+  summarise(sentiment_score = sum(value, na.rm = TRUE)) %>%
+  ungroup()
+
+# Classify sentiments
+sentiment_scores <- sentiment_scores %>%
+  mutate(sentiment = case_when(
+    sentiment_score > 0 ~ "Positive",
+    sentiment_score < 0 ~ "Negative",
+    TRUE ~ "Neutral"
+  ))
+
+
+# Merge sentiment scores back with original comments
+pfcomments <- pfcomments %>%
+  left_join(sentiment_scores %>% select(comment_id, sentiment_score, sentiment), by = "comment_id")
+
+# Plot sentiment distribution
+pfcomments %>%
+  filter(sentiments != "Question") %>%
+  ggplot(aes(sentiments, fill = sentiments)) +
+  geom_bar() +
+  labs(title = "Sentiment Analysis of Comments")
+
+# Ensure same levels for confusion matrix
+pfcomments <- pfcomments %>%
+  mutate(sentiments = factor(sentiments, levels = c("Positive", "Negative", "Neutral")),
+         sentiment = factor(sentiment, levels = c("Positive", "Negative", "Neutral")))
+
+# Generate confusion matrix
+confusionMatrix(pfcomments$sentiment, pfcomments$sentiments)
+
+```
+
+
 ## Wordcloud
+A nice visualization for the company to use
 ```{r}
 #install.packages("wordcloud")
 library(wordcloud)

@@ -215,7 +215,7 @@ clean_data <- clean_data %>%
   mutate(Rank_Category = as.factor(Rank_Category))
 ```
  
-The final data cleaning step is checking total NA values for each variable
+The final data cleaning step is checking total NA values for each variable which there are none
 ```{r}
 cbind(lapply(lapply(clean_data, is.na), sum))
 ``` 
@@ -307,6 +307,7 @@ hist_plots <- create_histograms_ggplot(clean_data)
 ```
 
 ## Principal Component Analysis (PCA)
+In our data exploration, the correlation plot showed the high correlation between our variables. Because of this, a principal component analysis was performed to reduce collinearity.  A scree plot was used to determine the number of components. Figure 5 shows the scree plot.
 ```{r}
 library(htmlwidgets)
 library(plotly)
@@ -317,11 +318,13 @@ prin_comp <- prcomp(X, center = TRUE, scale. = TRUE)
 ```
 
 ### Scree Plot
+The scree plot shows there should be around 3 components to account for the most variance while also reducing the dimensions.
 ```{r}
 plot(prin_comp, type = "l", main = "Scree Plot")
 ```
 
 ### 3D PCA
+A 3d plot with the three axes of the plot representing the first three principal components (PC1, PC2, and PC3). It also clusters the variable Ranked_Category very accurately. Although it clusters Ranked_Category well, it only accounts for 61.67% of the variance so we will not use it. 
 ```{r}
 summ <- summary(prin_comp)
 summ$importance[2,]
@@ -352,50 +355,9 @@ fig
 saveWidget(fig, "interactive_plot.html")
 ```
 
-## Neural Network
-```{r}
-library(neuralnet)
-library(caret)
-library(tidymodels)
-
-nndata <- clean_data 
-set.seed(123)
-# Put 3/4 of the data into the training set 
-data_split <- initial_split(nndata, prop = 3/4, strata = Rank_Category)
-
-# Create data frames for the two sets:
-train_data <- training(data_split)
-test_data  <- testing(data_split)
-
-
-NN <- neuralnet(Rank_Category ~ ., train_data, hidden = c(5,3), linear.output = TRUE)
-plot(NN, rep = "best")
-```
-### Confusion Matrix
-```{r}
-predicted_classes <- predict(NN, test_data)
-# Extract predicted class labels
-predicted_classes <- max.col(predicted_classes)
-
-# Convert the indices to class labels
-predicted_classes <- levels(test_data$Rank_Category)[predicted_classes]
-actual_classes <- test_data$Rank_Category
-
-predicted_classes <- factor(predicted_classes, levels = levels(actual_classes))
-
-# length(predicted_classes)
-# print(predicted_classes)
-
-# Extract actual class labels from the test data
-# length(actual_classes)
-# print(actual_classes)
-
-# Create a confusion matrix
-confusionMatrix(predicted_classes, test_data$Rank_Category)
-```
-
 
 ## XGBoost Classification Model
+Due to the high colinearity between our variables, our model must be able to take it into account. This model will be for exploration use rather than predictive so that we can see what variables are important to be ranked higher at the end of the season.	
 ```{r}
 #libs
 library(janitor)
@@ -453,6 +415,7 @@ xgb_workfl <- workflow(DATA_rec, xgb_spec)
 ```
 
 ### Race Anova 
+Our model will be an XGBoost that utilizes a racing ANOVA. Tidymodels will also be used so that we can tune trees, min_n, mtry, tree_depth, learn_rate, and loss_reduction. 
 ```{r}
 library(finetune)
 doParallel::registerDoParallel()
@@ -468,6 +431,7 @@ xgb_rs <- tune_race_anova(
 ```
 
 ### Comparing Models
+The plot below shows the racing ANOVA as it picks out the best model
 ```{r}
 anova <- plot_race(xgb_rs)
 
@@ -480,6 +444,7 @@ anova +
 ```
 
 ### Best Model
+The following code is used to extract the best model
 ```{r}
 show_best(xgb_rs)
 ```
@@ -493,6 +458,7 @@ xgb_last$.metrics
 ```
 
 ### Confusion Matrix
+The final model had an accuracy of 83.52 % for predicting 'Ranked_Category' and an AUC of 0.914. Although this is not the highest accuracy, the more important part is the importance of each variable for the model are Def_Eff, Win, Def_FG, Off_2p, and Off_TO as seen in the plot below. 
 ```{r}
 DATA_pred <- collect_predictions(xgb_last)$.pred_class
 
@@ -511,7 +477,48 @@ vip
 ```
 
 
+## Neural Network
+Now that we know the important variables for 'Ranked Category', a neural network was performed to see how well we could predict it. The neural network was made in R using the command neuralnet(). The best neural network is seen in Figure 9 which had a 97.80% accuracy.
+```{r}
+library(neuralnet)
+library(caret)
+library(tidymodels)
 
+nndata <- clean_data 
+set.seed(123)
+# Put 3/4 of the data into the training set 
+data_split <- initial_split(nndata, prop = 3/4, strata = Rank_Category)
+
+# Create data frames for the two sets:
+train_data <- training(data_split)
+test_data  <- testing(data_split)
+
+
+NN <- neuralnet(Rank_Category ~ ., train_data, hidden = c(5,3), linear.output = TRUE)
+plot(NN, rep = "best")
+```
+### Confusion Matrix
+```{r}
+predicted_classes <- predict(NN, test_data)
+# Extract predicted class labels
+predicted_classes <- max.col(predicted_classes)
+
+# Convert the indices to class labels
+predicted_classes <- levels(test_data$Rank_Category)[predicted_classes]
+actual_classes <- test_data$Rank_Category
+
+predicted_classes <- factor(predicted_classes, levels = levels(actual_classes))
+
+# length(predicted_classes)
+# print(predicted_classes)
+
+# Extract actual class labels from the test data
+# length(actual_classes)
+# print(actual_classes)
+
+# Create a confusion matrix
+confusionMatrix(predicted_classes, test_data$Rank_Category)
+```
 
 
 

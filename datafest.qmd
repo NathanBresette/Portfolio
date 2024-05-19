@@ -11,4 +11,7 @@ page-layout: full
 title-block-banner: false
 ---
 
-DataFest is a celebration of data in which teams of undergraduates work "around the clock" to discover and share meaning in a large, rich, and complex data set. It is a nationally coordinated weekend-long data analysis competition and challenges students to find their own story to tell with the data that is meaningful to the data donor.
+DataFest is a competition of data in which teams of undergraduates work "around the clock" to discover and share meaning in a large, rich, and complex data set. It is a nationally coordinated weekend-long data analysis competition and challenges students to find their own story to tell with the data that is meaningful to the data donor.
+
+At Truman, we had a group of four that worked on several smaller projects before the actual competition. The week before we did a practice DataFest where our teacher gave us an unclean dataset with millions of rows on car crashes across the United States. We worked from 9 am to 5 pm and our completed results are in Traffic Impact. The actual datafest competition project is CourseKata. Due to 4 people writing code, it is not in the cleanest format. I would recommend looking at the slideshow for our finished project
+

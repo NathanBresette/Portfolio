@@ -122,7 +122,14 @@ ul.task-list li input[type="checkbox"] {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overview-of-project" id="toc-overview-of-project" class="nav-link active" data-scroll-target="#overview-of-project">Overview of Project</a></li>
+  <li><a href="#slideshow" id="toc-slideshow" class="nav-link" data-scroll-target="#slideshow">Slideshow</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -164,10 +171,20 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<p>Analysis on Missouri crashes from 2021 to 2023 with a two-stage predictive model—comprising a decision tree and a CART regression tree was developed.</p>
+<section id="overview-of-project" class="level2">
+<h2 class="anchored" data-anchor-id="overview-of-project">Overview of Project</h2>
+<p>The traffic dataset contains 7.7 million cases of crashes across the United States, from 2016 to 2024, as well as the locations of the crash, weather conditions, features of surrounding road, and the severity of the impact of the crash on traffic conditions. For purposes of our analysis, we focused on crashes in Missouri during the years 2021, 2022, and 2023. To enhance analysis, our group engineered new features within the dataset, highlighted by a new feature we called Traffic Impact. This variable was based on how long traffic was inhibited, as well as the total distance of road over which traffic was impacted. Our other main enhancement was refactoring and separating the weather categories into two separate features: one for the type of weather, and another for the severity of the weather.</p>
+<p>Exploratory analysis of the new feature Traffic Impact to the weather conditions during which crashes occurred, we found that crashes that occurred during conditions involving snow and ice had a significantly higher Traffic Impact score than crashes in any other conditions. Additionally, when controlling for conditions with snow and ice, we found that temperature had no significant effect on the Traffic Impact Score.</p>
+<p>To predict the severity of traffic impact, we utilized a two-stage model: one which categorizes if the crash has an impact, and another that predicts its Traffic Impact score. Models were trained on crashes from 2021 and tested on the crashes from 2022. The first stage model utilized is a categorical decision tree which resulted in an accuracy of 81.51%, a sensitivity of 91.41%, and specificity of 21.92%. The second stage model is a CART regression tree that resulted in a RMSEtrain of 1.32 and RMSEtest of 1.578. The second stage model predicted values had a correlation of 0.468 with the actual values.</p>
+</section>
+<section id="slideshow" class="level2">
+<h2 class="anchored" data-anchor-id="slideshow">Slideshow</h2>
 <iframe width="800" height="500" src="powerpoint.pdf">
 </iframe>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
