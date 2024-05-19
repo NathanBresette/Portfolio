@@ -9,8 +9,9 @@
   {
     "listing": "/projects.html",
     "items": [
+      "/posts/Text Analysis/text_analysis.html",
       "/posts/NCAA Basketball/basketball.html",
-      "/posts/Text Analysis/text_analysis.html"
+      "/posts/This Website/ThisWebsite.html"
     ]
   }
 ]

@@ -1,8 +1,8 @@
 ---
 title: "Text Classification and Sentiment Analysis"
-date: 05-17-2023 
+date: 05-20-2023 
 author: Nathan Bresette 
-categories: [text classification, text analysis, R]
+categories: [Text Classification, Sentiment Analysis, R]
 image: "LL_wordcloud.jpg"
 
 output:

@@ -2,8 +2,8 @@
 title: "NCAA Basketball Analysis"
 author: "Nathan Bresette"
 date: "2024-04-12"
-categories: [Webscraping, PCA, Neural Network, XGBoost, ggplot, plotly]
-image: "3d_pca.png"
+categories: [Webscraping, PCA, Neural Network, XGBoost, R, Plotly]
+image: "bbplotly.png"
 
 output:
   html_document:

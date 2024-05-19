@@ -1,0 +1,21 @@
+---
+title: "This Website!"
+author: "Nathan Bresette"
+date: "2024-05-18"
+categories: [Quarto, HTML, SCSS]
+image: "quarto.png"
+
+output:
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+format:
+  html:
+    code-link: true
+    code-fold: true
+    code-overflow: wrap
+    warning: false
+---
+
+This was my first 'frontend' project that was done through lots of trial and erorr, tutorials, and reading. Overall, I am very pleased with the end result and would recommend Quarto for a portfolio. Once the website was created, it has been very easy to upload new files.
