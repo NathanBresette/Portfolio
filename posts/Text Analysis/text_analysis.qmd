@@ -1,5 +1,5 @@
 ---
-title: "Text Classification and Sentiment Analysis"
+title: "Text Classification & Sentiment Analysis"
 date: 05-20-2024 
 author: Nathan Bresette 
 categories: [Text Classification, Sentiment Analysis, R]
