@@ -234,11 +234,18 @@ shinyApp(ui = ui, server = server)
 ```
 
 # Images of Dashboard
+### Map of Taiwan:
 ```{r}
 knitr::include_graphics("Taiwan_Map.png")
+```
 
+### Pairwise Plot (My package!!!)
+```{r}
 knitr::include_graphics("Pairwise_Shiny.png")
+```
 
+### Scatterplot 
+```{r}
 knitr::include_graphics("Scatterplot_Shiny.png")
 
 ```
