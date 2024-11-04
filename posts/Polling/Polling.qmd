@@ -18,8 +18,22 @@ format:
     warning: false
 ---
 # Analysis of Nate Silver's Polling Outcomes: Observed vs. Expected Results
-Goal: Examine, analyze, and enhance Nate Silver's paper on presidential polling
+### Goal: 
+Examine, analyze, and enhance Nate Silver's paper on presidential polling and why the polls are wrong
 
+### Overview:
+Nate Silver’s recent article (https://www.natesilver.net/p/theres-more-herding-in-swing-state) about polling inaccuracies caught my attention, especially his insights on how polling firms adjust weights in their models to create narratives of close races. He pointed out that there’s a staggering 1 in 9.5 trillion chance of so many polls showing such tight margins. Inspired by this, I decided to recreate his results using the same data and present some visually appealing graphs.
+
+I used a binomial cumulative distribution function to calculate the probability of observing 193 or more close polls, assuming a null hypothesis of 0.55. The result? A jaw-dropping 1 in 8 trillion chance of seeing such close outcomes by random chance alone. This suggests there’s almost zero probability that these polls reflect the true state of the race, indicating that some results may be manipulated to appear closer than they are. This discrepancy raises serious questions about the reliability of polling outcomes.
+
+To illustrate how misleading these polls can be, I created three graphs:
+Graph 1: A histogram showing simulated outcomes, with a red dashed line marking the observed success of 193 close polls. This emphasizes just how rare these results are.
+Graph 2: A bar chart comparing expected vs. observed close polls, highlighting the significant deviation from historical norms.
+Graph 3: A cumulative distribution function (CDF) plot that gives a broader perspective on the likelihood of various polling outcomes, further reinforcing the unusual nature of what we’re seeing.
+
+These findings underline the importance of critically examining polling methods and understanding how weight adjustments can skew results. As we head into this election season, let’s stay aware of how these factors shape our perceptions and take all predictions with a grain of salt. Most importantly, go vote!
+
+### Introduction
 In examining the polling data, we start with the foundational parameters that govern our analysis from Nate Silver's paper: https://www.natesilver.net/p/theres-more-herding-in-swing-state. We have a total of 249 polls in the database, with an expected probability of a poll showing a close result under the null hypothesis set at 0.55. This probability is based on Nate Silver's analysis, which indicates that, in a tied race, we would expect 55% of the polls to show results within ±2.5 points. This expectation arises from the margin of error formula and varies significantly depending on sample size but for a more in depth reasoning, check out his paper. In the data, the actual number of polls that showed a close result is 193 so 193/249 polls or 78% showed a close race.
 
 ### Binomial Distribution
@@ -63,7 +77,7 @@ ggplot(data.frame(simulated_outcomes), aes(x = simulated_outcomes)) +
            label = bquote(bold("Observed: ") * bold(.(observed_successes))), color = "red") +
   scale_x_continuous(limits = c(min(simulated_outcomes) - 5,200)) +  # Expand x-axis range
   labs(
-    title = "Graph 2: Simulated Distribution of Close Poll Outcomes",
+    title = "Graph 1: Simulated Distribution of Close Poll Outcomes",
     x = "Number of Close Polls",
     y = "Frequency",
     subtitle = "The blue distrubition is the expected number of close polls from the simulation
