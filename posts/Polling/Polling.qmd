@@ -1,6 +1,6 @@
 ---
 title: "Analysis of Nate Silver's Polling Outcomes:"
-date: 05-20-2024 
+date: 11-4-2024 
 author: Nathan Bresette 
 categories: [Binomial Distributions, Visualizations, Weights, R]
 image: "polling.jpeg"
@@ -20,7 +20,7 @@ format:
 # Analysis of Nate Silver's Polling Outcomes: Observed vs. Expected Results
 Goal: Examine, analyze, and enhance Nate Silver's paper on presidential polling
 
-In examining the polling data, we start with the foundational parameters that govern our analysis. We have a total of 249 polls in the database, with an expected probability of a poll showing a close result under the null hypothesis set at 0.55. This probability is based on Nate Silver's analysis, which indicates that, in a tied race, we would expect 55% of the polls to show results within ±2.5 points. This expectation arises from the margin of error formula and varies significantly depending on sample size but for a more in depth reasoning, check out his paper. In the data, the actual number of polls that showed a close result is 193 so 193/249 polls or 78% showed a close race.
+In examining the polling data, we start with the foundational parameters that govern our analysis from Nate Silver's paper: https://www.natesilver.net/p/theres-more-herding-in-swing-state. We have a total of 249 polls in the database, with an expected probability of a poll showing a close result under the null hypothesis set at 0.55. This probability is based on Nate Silver's analysis, which indicates that, in a tied race, we would expect 55% of the polls to show results within ±2.5 points. This expectation arises from the margin of error formula and varies significantly depending on sample size but for a more in depth reasoning, check out his paper. In the data, the actual number of polls that showed a close result is 193 so 193/249 polls or 78% showed a close race.
 
 ### Binomial Distribution
 Using these parameters, we calculate the probability of observing 193 or more close polls under the null hypothesis. This is accomplished through the binomial cumulative distribution function (CDF):
@@ -59,7 +59,6 @@ simulated_outcomes <- rbinom(simulations, n, p)
 ggplot(data.frame(simulated_outcomes), aes(x = simulated_outcomes)) +
   geom_histogram(binwidth = 1, fill = "skyblue", color = "black") +
   geom_vline(xintercept = observed_successes, color = "red", linetype = "dashed", size = 1) +
-  # Move the annotation text slightly to the left and bold both parts of the text
   annotate("text", x = observed_successes - 10, y = max(table(simulated_outcomes)) * 0.9,
            label = bquote(bold("Observed: ") * bold(.(observed_successes))), color = "red") +
   scale_x_continuous(limits = c(min(simulated_outcomes) - 5,200)) +  # Expand x-axis range

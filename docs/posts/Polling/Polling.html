@@ -5,7 +5,7 @@
 <meta name="generator" content="quarto-1.4.553">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <meta name="author" content="Nathan Bresette">
-<meta name="dcterms.date" content="2024-05-20">
+<meta name="dcterms.date" content="2024-11-04">
 <title>Nathan Bresette - Analysis of Nate Silver’s Polling Outcomes:</title>
 <style>
 code{white-space: pre-wrap;}
@@ -182,7 +182,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">May 20, 2024</p>
+      <p class="date">November 4, 2024</p>
     </div>
   </div>
   
@@ -193,7 +193,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header><section id="analysis-of-nate-silvers-polling-outcomes-observed-vs.-expected-results" class="level1"><h1>Analysis of Nate Silver’s Polling Outcomes: Observed vs.&nbsp;Expected Results</h1>
 <p>Goal: Examine, analyze, and enhance Nate Silver’s paper on presidential polling</p>
-<p>In examining the polling data, we start with the foundational parameters that govern our analysis. We have a total of 249 polls in the database, with an expected probability of a poll showing a close result under the null hypothesis set at 0.55. This probability is based on Nate Silver’s analysis, which indicates that, in a tied race, we would expect 55% of the polls to show results within ±2.5 points. This expectation arises from the margin of error formula and varies significantly depending on sample size but for a more in depth reasoning, check out his paper. In the data, the actual number of polls that showed a close result is 193 so 193/249 polls or 78% showed a close race.</p>
+<p>In examining the polling data, we start with the foundational parameters that govern our analysis from Nate Silver’s paper: https://www.natesilver.net/p/theres-more-herding-in-swing-state. We have a total of 249 polls in the database, with an expected probability of a poll showing a close result under the null hypothesis set at 0.55. This probability is based on Nate Silver’s analysis, which indicates that, in a tied race, we would expect 55% of the polls to show results within ±2.5 points. This expectation arises from the margin of error formula and varies significantly depending on sample size but for a more in depth reasoning, check out his paper. In the data, the actual number of polls that showed a close result is 193 so 193/249 polls or 78% showed a close race.</p>
 <section id="binomial-distribution" class="level3"><h3 class="anchored" data-anchor-id="binomial-distribution">Binomial Distribution</h3>
 <p>Using these parameters, we calculate the probability of observing 193 or more close polls under the null hypothesis. This is accomplished through the binomial cumulative distribution function (CDF):</p>
 <div class="cell">
@@ -232,7 +232,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span><span class="va">simulated_outcomes</span><span class="op">)</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">simulated_outcomes</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html">geom_histogram</a></span><span class="op">(</span>binwidth <span class="op">=</span> <span class="fl">1</span>, fill <span class="op">=</span> <span class="st">"skyblue"</span>, color <span class="op">=</span> <span class="st">"black"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="va">observed_successes</span>, color <span class="op">=</span> <span class="st">"red"</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, size <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="co"># Move the annotation text slightly to the left and bold both parts of the text</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/annotate.html">annotate</a></span><span class="op">(</span><span class="st">"text"</span>, x <span class="op">=</span> <span class="va">observed_successes</span> <span class="op">-</span> <span class="fl">10</span>, y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="va">simulated_outcomes</span><span class="op">)</span><span class="op">)</span> <span class="op">*</span> <span class="fl">0.9</span>,</span>
 <span>           label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/bquote.html">bquote</a></span><span class="op">(</span><span class="fu">bold</span><span class="op">(</span><span class="st">"Observed: "</span><span class="op">)</span> <span class="op">*</span> <span class="fu">bold</span><span class="op">(</span><span class="fu">.</span><span class="op">(</span><span class="va">observed_successes</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>, color <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html">scale_x_continuous</a></span><span class="op">(</span>limits <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html">min</a></span><span class="op">(</span><span class="va">simulated_outcomes</span><span class="op">)</span> <span class="op">-</span> <span class="fl">5</span>,<span class="fl">200</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span>  <span class="co"># Expand x-axis range</span></span>
