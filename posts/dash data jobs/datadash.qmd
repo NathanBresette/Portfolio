@@ -1,0 +1,547 @@
+---
+title: "Data Salary Analysis Dashboard"
+date: 12-1-2024 
+author: Nathan Bresette, Bek Usmonov, Riccardo Crapanzano  
+categories: [R-Shiny, Tidyverse, Plotly, Regression, Python, Webscraping, R]
+image: "datamap.png"
+output:
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+format:
+  html:
+    code-link: true
+    code-fold: true
+    code-overflow: wrap
+    warning: false
+---
+
+RShiny dashboard that explores and visualizes data science salary trends from 2020-2024.
+
+**Link to dashboard:** https://nathanbresette.shinyapps.io/data324_project/ 
+
+# Overview of Project 
+The project utilized a Kaggle dataset containing anonymized salary data from the data field, with variables such as job title, experience level, company size, and geographic location. Our goal was to provide users with an interactive tool to better understand the factors influencing salaries across different roles and regions. Through various visualizations like boxplots, bar charts, and maps, the app allows users to filter the data by other criteria, making it easy to identify patterns and draw meaningful insights. This project was a valuable opportunity to apply our skills in R, data manipulation, and visualization while working collaboratively to ensure the dashboard was functional and user-friendly.
+
+We highly recommend visiting the "Documentation" tab within the app for a more detailed explanation of the dataset, the features available, and how to navigate the dashboard. The app not only visualizes salary trends but also aims to answer key questions such as how location, experience, and employment type impact earnings. Users can explore whether they are being compensated fairly by leveraging the linear model integrated into the app. This collaborative effort highlights the power of data visualization in making informed career decisions, and we hope it serves as a useful resource for those entering or advancing within the data field
+
+# Group Code
+```{r, eval=FALSE}
+# Libraries
+library(shiny)
+library(DT)
+library(viridis)
+library(MASS)
+library(tidyverse)
+library(plotly)
+library(sf)
+library(leaflet)
+library(rsconnect)
+
+world <- st_read("data/world.gpkg")
+
+# # Load country geometries from rnaturalearth
+#  world <- ne_countries(scale = "medium", returnclass = "sf")
+# 
+#  world <- world %>%
+#    dplyr::select("iso_a2", "name", "continent")
+# 
+#  st_write(world, "~/Downloads/world.gpkg")
+ 
+# Load Salaries dataset and clean it
+Salaries <- read.csv("data/datafile.csv")
+
+Salaries_Clean <- Salaries %>% 
+  mutate(remote_ratio = factor(case_when(
+    remote_ratio == 0 ~ "On Site",
+    remote_ratio == 100 ~ "Remote",
+    remote_ratio == 50 ~ "Hybrid",
+    TRUE ~ "Other"
+  ), levels = c("On Site", "Hybrid", "Remote"))) %>% 
+  mutate(experience_level = factor(case_when(
+    experience_level == "EN" ~ "Entry-Level",
+    experience_level == "MI" ~ "Mid-Level",
+    experience_level == "SE" ~ "Senior-Level",
+    experience_level == "EX" ~ "Executive-Level",
+    TRUE ~ "Other"
+  ), levels = c("Entry-Level", "Mid-Level", "Senior-Level", "Executive-Level"))) %>% 
+  mutate(company_size = factor(case_when(
+    company_size == "S" ~ "Small",
+    company_size == "M" ~ "Medium",
+    company_size == "L" ~ "Large",
+    TRUE ~ as.character(company_size)
+  ), levels = c("Small", "Medium", "Large"))) %>% 
+  dplyr :: select(-c("employment_type", "salary_currency")) %>%
+  rename(
+    WorkLocation = remote_ratio,
+    ExperienceLevel = experience_level,
+    CompanySize = company_size,
+    Salary = salary,
+    WorkYear = work_year,
+    JobTitle = job_title
+  )
+
+# Employee residence for mapping
+Salaries_Residence <- Salaries %>%
+  group_by(employee_residence) %>%
+  summarize(count = n(), 
+            mean_salary = mean(salary_in_usd, na.rm = TRUE), 
+            median_salary = median(salary_in_usd, na.rm = TRUE))
+
+
+
+
+Salaries_Clean_Regression <- Salaries_Clean %>% 
+  mutate(salary_in_usd = as.numeric(salary_in_usd),
+         ExperienceLevel = as.factor(ExperienceLevel),
+         JobTitle = as.factor(JobTitle),
+         employee_residence = as.factor(employee_residence),
+         company_location = as.factor(company_location))
+
+dataset <- Salaries_Clean_Regression
+
+# Stepwise Regression model
+stepwise_model <- stepAIC(lm(salary_in_usd ~ ExperienceLevel + 
+                               JobTitle + employee_residence + WorkLocation + company_location + 
+                               CompanySize, data = dataset), direction = "both")
+
+# World geometry join
+map_data <- world %>%
+  left_join(Salaries_Residence, by = c("iso_a2" = "employee_residence"))
+
+
+
+
+
+
+ui <- fluidPage(
+  titlePanel("Data Salary (USD) Analysis (2020-2024)"),
+  tabsetPanel(
+    tabPanel("Data Frame",
+             h4("Data Salary Data Frame"),
+             DTOutput("salaries_table")),
+    tabPanel("Location Map",
+             h4("Employee Residence by Country or Continent"),
+             sidebarLayout(
+               sidebarPanel(
+                 selectInput("map_var", "Select Variable to Fill Map:",
+                             choices = c("Employee Count" = "count", 
+                                         "Mean Salary" = "mean_salary", 
+                                         "Median Salary" = "median_salary")),
+                 selectInput("group_var", "Group By:",
+                             choices = c("Country", "Continent"))
+               ),
+               mainPanel(
+                 plotOutput("ggplot_map"),
+                 h4("Grouped Table"),
+                 DTOutput("continent_table")
+               )
+             )
+    ),
+    tabPanel("Salary Box Plot",
+             sidebarLayout(
+               sidebarPanel(
+                 selectInput("color_var", "Choose X Input:", 
+                             choices = c("ExperienceLevel", "WorkLocation", "CompanySize")),
+                 selectizeInput("filter_experience", "Experience Level:", 
+                                choices = levels(Salaries_Clean$ExperienceLevel), 
+                                multiple = TRUE, 
+                                selected = levels(Salaries_Clean$ExperienceLevel)),
+                 selectizeInput("filter_location", "Work Location:", 
+                                choices = levels(Salaries_Clean$WorkLocation), 
+                                multiple = TRUE, 
+                                selected = levels(Salaries_Clean$WorkLocation)),
+                 selectizeInput("filter_company", "Company Size:", 
+                                choices = levels(Salaries_Clean$CompanySize), 
+                                multiple = TRUE, 
+                                selected = levels(Salaries_Clean$CompanySize))
+               ),
+               mainPanel(
+                 plotlyOutput("salary_box_plot"),
+                 h4("Mean and Median Salary"),
+                 DTOutput("summary_table")
+               )
+             )),
+    tabPanel("Work Location Proportions",
+             sidebarLayout(
+               sidebarPanel(
+                 selectInput("job_title", 
+                             "Select Job Title:", 
+                             choices = sort(unique(Salaries_Clean$JobTitle)), 
+                             selected = sort(unique(Salaries_Clean$JobTitle))[1],
+                             multiple = TRUE),
+                 selectizeInput("filter_experience_proportions", 
+                                "Experience Level:", 
+                                choices = levels(Salaries_Clean$ExperienceLevel), 
+                                multiple = TRUE, 
+                                selected = levels(Salaries_Clean$ExperienceLevel)),
+                 selectizeInput("filter_company_proportions", 
+                                "Company Size:", 
+                                choices = levels(Salaries_Clean$CompanySize), 
+                                multiple = TRUE, 
+                                selected = levels(Salaries_Clean$CompanySize))
+               ),
+               mainPanel(
+                 plotOutput("remote_ratio_plot")
+               )
+             )),
+    tabPanel("Salary Comparison by Residence",
+             sidebarLayout(
+               sidebarPanel(
+                 selectInput("company_size_input", "Company Size:",
+                                        choices = c("Small" = "S", "Medium" = "M", "Large" = "L"),
+                                        multiple = TRUE,
+                                        selected = c("S", "M", "L")),
+                            
+                 selectInput("experience_level_input", "Experience Level:",
+                                        choices = c("Entry-Level" = "EN", "Mid-Level" = "MI", 
+                                                    "Senior-Level" = "SE", "Executive-Level" = "EX"),
+                                        multiple = TRUE,
+                                        selected = c("EN", "MI", "SE", "EX")),
+                 selectInput(
+                   "work_location_input",
+                   "Work Location:",
+                   choices = c("On Site" = "100", "Hybrid" = "50", "Remote" = "0"), # Dynamically generate location choices
+                   multiple = TRUE,
+                   selected = c("100", "50", "0"))
+               ),
+               
+               mainPanel(
+                 plotlyOutput("residence_plot")
+               )
+             )
+    ),
+    
+    
+    tabPanel("Salary Prediction",
+    sidebarLayout(
+      sidebarPanel(
+        selectInput("experience_level", "Experience Level:", choices = levels(dataset$ExperienceLevel), selected = "EX"),
+        selectInput("worklocation", "Work Location:", choices = levels(dataset$WorkLocation), selected = "Hybrid"),
+        selectInput("employee_residence", "Employee Country Residence:", choices = levels(dataset$employee_residence), selected = "US"),
+        selectInput("companysize", "Company Size:", choices = levels(dataset$CompanySize), selected = "Medium"),
+                selectInput("jobtitle", "Job Title:", choices = levels(dataset$JobTitle), selected = "Admin & Data Analyst"),
+        
+        # Trigger prediction
+        actionButton("predict", "Predict Salary")
+      ),
+      
+      mainPanel(
+        tags$style(HTML("
+    h3 {
+      font-size: 30px;
+    }
+    #predicted_salary {
+      font-size: 24px;
+    }
+  ")),
+        h3("Press the button to predict the salary"),
+        textOutput("predicted_salary")
+      )
+      
+    )
+    ),
+    
+    
+    
+    # Documentation Tab UI (if you're using `tabPanel` in Shiny)
+    # Documentation Tab UI (using tags$ul and tags$li for lists)
+    tabPanel(
+      "Documentation",
+      h3("Introduction to the Data Set"),
+      p("This dataset is from Kaggle and provides anonymized information about salaries in the data field for 2024. It has a variety of factors that influence salaries, including experience level, job title, employment type (Remote/Onsite/Hybrid), and company size (Small/Medium/Large). The data also includes geographic location information."),
+      
+      p("Key variables included in this dataset are:"),
+      tags$ul(
+        tags$li(strong("Experience Level:") , " The employees experience level in the data field, categorized as 'Entry-level', 'Mid-level', and 'Senior-level', and 'Executive-level'."),
+        tags$li(strong("Job Title:") , " The specific job title held by the individual, such as Data Scientist, Data Analyst, or Machine Learning Engineer."),
+        tags$li(strong("Company Size:") , " The size of the company where the individual is employed, classified into 'Small', 'Medium', and 'Large' companies"),
+        tags$li(strong("Employment Type:") , " Whether the individual is working remotely, onsite, or hybrid."),
+        tags$li(strong("Location:") , " The geographical location of the individual,  representing a country or continent."),
+        tags$li(strong("Salary:") , " The compensation (in USD) received by the individual, representing their annual income.")
+      ),
+      
+      h3("Motivation for Creating the App"),
+      p("The primary motivation behind this app is to allow users to explore and analyze the factors that influence data salaries. With the increasing interest in data as a career, there is a growing need to understand what variables affect salary ranges in this field. By visualizing the salary data across various factors such as experience level, job title, company size, and geographic location, users can gain insights into the salary landscape for data professionals."),
+      
+      p("Specific questions that motivated the creation of the app include:"),
+      tags$ul(
+        tags$li("How do salaries vary by geographic location, and what factors are most influential in determining location-based pay differences?"),
+        tags$li("How does salary differ by experience level, job title, and company size?"),
+        tags$li("What impact does working remotely or in person have on data salaries?"),
+        tags$li("Based on a linear model, are you being payed fairly?"),
+        
+      ),
+      
+      p("By providing these insights, the app aims to empower users with the ability to see their own salaries, evaluate job market trends, and make data-driven career decisions in the field of data."),
+      
+      h3("How the App Works"),
+      p("This app allows users to interactively explore the relationships between salary and various factors. The key features of the app are:"),
+      tags$ul(
+        tags$li("Dynamic Filtering: Users can filter the data by experience level, job title, company size, and work location. This helps to focus on specific subsets of the data."),
+        tags$li("Visualizing Salary Trends: The app generates various visualizations, such as maps, boxplots, and bar charts, to show how salaries are influenced by different variables. Users can easily see how compensation changes with different levels of experience, company size, and job titles."),
+        tags$li("Geographic Insights: Location-based salary data is displayed, allowing users to compare compensation trends across different geographic areas. Due to limited data, there is a small count for several countries/continents"),
+        tags$li("Interactive Graphs: Users can hover over visualizations in real time, helping them answer specific questions or dive deeper into the data for more information.")
+      ),
+      p("Users can start by selecting one or more variables and adjusting filters to view trends in the dataset. They can then explore the correlations between salaries and factors such as experience level, location, and job title through the visual representations provided."),
+      
+      h3("Conclusions"),
+      p("From analyzing the dataset, several trends emerge:"),
+      tags$ul(
+        tags$li("Geographical Location: Although the United States and North America have some of the best mean/median pay, conclusions can not be drawn since the counts for other countries and continents are so low."),
+        tags$li("Experience Level: Higher experience levels generally correlate with higher salaries. Senior and executive roles have a significant salary increase compared to entry-level positions."),
+        tags$li("Company Size: Larger and medium companies tend to offer higher salaries, likely due to greater financial resources and the scale of operations. Due to a low count for small countries, it may not be entirely accurate"),
+        tags$li("Work Location: On site jobs have a higher pay than remote and hybrid job. Hybrid jobs have a signifcantly lower count so more data would need to be collected for more accurate conclusions."),
+        tags$li("Salary Comparison by Residence: Those who work in the country they reside in have a higher salary than those who do not overall. Due to the low count of those who do not reside in the country they work in, more data would need to be collected for more accuratae conclusions")
+      ),
+      p("This app helps users see these patterns and more. By interacting with the visualizations, users can draw their own conclusions about the data job market, and make informed decisions about their career paths or salary expectations."),
+      
+      h3("Citations"),
+      p("Data Source: The dataset used in this app is sourced from ", a(href = "https://www.kaggle.com/datasets/yusufdelikkaya/datascience-salaries-2024/data", "Kaggle: Data Science Salaries 2024"), "."))
+    
+
+  )
+)
+
+
+server <- function(input, output) {
+  
+  
+  filtered_data <- reactive({
+    Salaries_Clean %>%
+      filter(
+        ExperienceLevel %in% input$filter_experience,
+        WorkLocation %in% input$filter_location,
+        CompanySize %in% input$filter_company
+        
+      )
+  })
+  
+  filtered_data_2 <- reactive({
+    Salaries_Clean %>%
+      filter(
+        ExperienceLevel %in% input$filter_experience_proportions,
+        CompanySize %in% input$filter_company_proportions,
+        JobTitle %in% input$job_title
+      ) 
+  })
+  
+  # Data Table
+  output$salaries_table <- renderDT({
+    datatable(Salaries_Clean)
+  })
+  
+  # Salary Box Plot
+  output$salary_box_plot <- renderPlotly({
+    p <- ggplot(filtered_data(), aes_string(x = input$color_var, y = "salary_in_usd", fill = input$color_var)) +
+      geom_boxplot() +
+      scale_y_continuous(labels = scales::comma) +  
+      labs(title = paste("Salary Box Plot by", input$color_var),
+           x = input$color_var,
+           y = "Salary (USD)") +
+      scale_fill_viridis(discrete = TRUE, begin = 0.3) +  # Begin later for lighter purple
+      theme_minimal()
+    
+    ggplotly(p)  
+  })
+  
+  # Mean and Median Table
+  output$summary_table <- renderDT({
+    Salaries_Clean %>%
+      group_by(!!sym(input$color_var)) %>%
+      summarise(
+        `Count` = n(),
+        `Mean Salary`= round(mean(salary_in_usd, na.rm = TRUE), 2),
+        `Median Salary` = round(median(salary_in_usd, na.rm = TRUE), 2)
+      ) 
+  })
+  
+  output$remote_ratio_plot <- renderPlot({
+    filtered_data_2() %>%
+      group_by(WorkYear, WorkLocation) %>%
+      summarise(count = n(), .groups = 'drop') %>%
+      mutate(percentage = count / sum(count) * 100) %>%
+      ggplot(aes(x = as.factor(WorkYear), y = percentage, fill = WorkLocation)) +
+      geom_bar(stat = "identity", position = "fill") +
+      labs(title = paste("Proportion of Work Locations for Selected Filters by Year"),
+           x = "Year",
+           y = "Proportion (%)",
+           fill = "Work Location") +
+      scale_fill_viridis(discrete = TRUE, begin = 0.3) +  # Begin later so lighter purple
+      theme_minimal()
+  })
+  
+
+  
+  
+
+  
+  output$ggplot_map <- renderPlot({
+    # Dynamically group data with ifelse
+    grouped_map_data <- map_data %>%
+      st_set_geometry(NULL) %>%  # Drop geometry for aggregation
+      group_by(Group = if (input$group_var == "Country") name else continent) %>%
+      summarize(
+        count = sum(count, na.rm = TRUE),
+        mean_salary = round(mean(mean_salary, na.rm = TRUE), 2),
+        median_salary = round(median(median_salary, na.rm = TRUE), 2)
+      ) %>%
+      left_join(world, by = c("Group" = if (input$group_var == "Country") "name" else "continent")) %>%
+      st_as_sf()  # Reattach geometry after grouping
+    
+    # Extract the range of the selected variable
+    selected_var <- grouped_map_data[[input$map_var]]
+    min_val <- min(selected_var, na.rm = TRUE)
+    max_val <- max(selected_var, na.rm = TRUE)
+    
+    # Plot the map
+    ggplot(data = grouped_map_data) +
+      geom_sf(aes_string(fill = input$map_var), color = "white") +
+      scale_fill_viridis(
+        option = "C",
+        direction = 1,
+        na.value = "lightgrey",
+        limits = c(min_val, max_val),  # Ensure the scale fits the range
+        breaks = c(min_val, max_val),  # Only show min and max in the legend
+        labels = scales::comma
+      ) +
+      labs(
+        title = paste(
+          if (input$group_var == "Country") "Employee Residence by Country" else "Employee Residence by Continent",
+          "-", if (input$map_var == "count") "Employee Count" else if (input$map_var == "mean_salary") "Mean Salary" else "Median Salary"
+        ),
+        fill = if (input$map_var == "count") "Employee Count" else if (input$map_var == "mean_salary") "Mean Salary" else "Median Salary"
+      ) +
+      theme_minimal() +
+      theme(
+        legend.position = "bottom",
+        legend.title = element_text(face = "bold"),
+        legend.text = element_text(size = 10)
+      )
+  })
+  
+
+
+  
+  
+  # Grouped Table
+  output$continent_table <- renderDT({
+    grouped_data <- map_data %>%
+      st_set_geometry(NULL) %>%  # Drop geometry column
+      group_by(group = if (input$group_var == "Country") name else continent) %>%
+      summarize(
+        `Employee Count` = sum(count, na.rm = TRUE),
+        `Mean Salary` = round(mean(mean_salary, na.rm = TRUE), 2),
+        `Median Salary` = round(median(median_salary, na.rm = TRUE), 2)
+      ) %>%
+      arrange(desc(`Employee Count`))
+    
+    datatable(grouped_data, options = list(pageLength = 5, searching = FALSE))
+  })
+  
+  output$residence_plot <- renderPlotly({
+    
+    # Filter based on inputs
+    filtered_data3 <- reactive({
+      Salaries %>%
+        filter(
+          company_size %in% input$company_size_input,
+          experience_level %in% input$experience_level_input,
+          remote_ratio %in% input$work_location_input 
+          
+        ) %>%
+        mutate(
+          CompanySize = case_when(
+            company_size == "S" ~ "Small",
+            company_size == "M" ~ "Medium",
+            company_size == "L" ~ "Large",
+            TRUE ~ as.character(company_size)
+          ),
+          ExperienceLevel = case_when(
+            experience_level == "EN" ~ "Entry-Level",
+            experience_level == "MI" ~ "Mid-Level",
+            experience_level == "SE" ~ "Senior-Level",
+            experience_level == "EX" ~ "Executive-Level",
+            TRUE ~ as.character(experience_level)
+          ),
+          ResidesInWorkCountry = ifelse(
+            employee_residence == company_location,
+            "Resides in Work Country",
+            "Does Not Reside in Work Country"
+          )
+        )
+    })
+    
+    data <- filtered_data3()
+    
+    # Count observations 
+    counts <- data %>%
+      group_by(ResidesInWorkCountry) %>%
+      summarise(count = n(), .groups = "drop")
+    
+    # Make plot
+    p <- plot_ly(
+      data = data,
+      x = ~ResidesInWorkCountry,
+      y = ~salary_in_usd,
+      type = "box",
+      color = ~ResidesInWorkCountry,
+      colors = viridis::viridis(2),
+      boxmean = TRUE
+    ) %>%
+      layout(
+        title = "Salary Distribution for Residents vs Non-Residents in Work Country",
+        xaxis = list(title = "Residency Status"),
+        yaxis = list(title = "Salary (USD)"),
+        showlegend = FALSE
+        
+      )
+    
+    
+    # Add count above the boxplots
+    p <- p %>%
+      add_annotations(
+        x = counts$ResidesInWorkCountry,
+        y = max(data$salary_in_usd, na.rm = TRUE) + 5000, # Adjust position
+        text = paste("Count: ", counts$count),
+        showarrow = FALSE,
+        font = list(size = 12, color = "black"),
+        xanchor = "center",
+        yanchor = "bottom"
+      )
+    
+    # Return the plot
+    p
+  })
+  
+
+
+  
+  observeEvent(input$predict, {
+    # Collect inputs 
+    new_data <- data.frame(
+      ExperienceLevel = input$experience_level,
+      WorkLocation = input$worklocation,
+      employee_residence = input$employee_residence,
+      CompanySize = input$companysize,
+      JobTitle = input$jobtitle,  
+      stringsAsFactors = TRUE  # IDK why this worked
+    )
+    
+    # Predict salary using stepwise model
+    predicted_salary <- predict(stepwise_model, newdata = new_data)
+    
+    # Output salary
+    output$predicted_salary <- renderText({
+      paste("The predicted salary in USD is $", round(predicted_salary, 2))
+    })
+  })
+  
+  
+}
+
+shinyApp(ui = ui, server = server)
+
+```
+

@@ -16,7 +16,7 @@ format:
     code-overflow: wrap
     warning: false
 ---
-Create and host a dashboard using R/R-Shiny!
+Create and host a dashboard using R-Shiny to explore housing prices in Taiwan!
 
 Link to the dashboard: https://nathanbresette.shinyapps.io/real_estate/  
 

@@ -1,0 +1,339 @@
+---
+title: "College Football Playoffs Ticket Price Analysis"
+date: 01-03-2025 
+author: Nathan Bresette 
+categories: [AWS Lambda, AWS Eventbridge, AWS S3, Python, Webscraping, R]
+image: "cfp.jpeg"
+output:
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+format:
+  html:
+    code-link: true
+    code-fold: true
+    code-overflow: wrap
+    warning: false
+---
+College Football Playoff Semifinals Ticket Price Analysis using AWS, Python, and R
+
+# Overview
+I leveraged AWS services—Lambda, EventBridge, and S3—to automate the web scraping of ticket prices for the College Football Playoff semifinals. The goal was to analyze pricing trends and determine the best time to purchase tickets. By utilizing Python for the scraping, I created a scalable and efficient solution that ran without manual intervention.
+
+I used AWS Lambda to host and execute the Python web scraping script. This serverless approach allowed the scraping process to run on demand, ensuring cost efficiency and eliminating the need to manage infrastructure. EventBridge was configured to trigger the Lambda function at regular intervals, automating the data collection process without the need for cronjobs. The scraped data was stored in an S3 bucket
+
+My main goal of this project was to learn AWS Service but I still did a quick analysis! 
+
+# AWS Lambda Python Code
+```{r,  eval=FALSE}
+import requests
+import boto3
+from bs4 import BeautifulSoup
+import csv
+from botocore.exceptions import NoCredentialsError
+from datetime import datetime
+import io
+
+# Initialize S3 client
+s3 = boto3.client('s3')
+bucket_name = 'ticketscraping-nb'
+file_name = 'tickets_grouped_by_url.csv'
+
+# List of URLs to scrape
+urls = [
+    "https://gametime.co/college-football-bowl/fiesta-bowl-boise-state-vs-penn-state-smu-cfp-quarterfinal-tickets/12-31-2024-glendale-az-state-farm-stadium/events/6660be26a3192d130a64acae?queryId=55fbb43698d32a93ac46530ba9313127&resultPosition=2&searchIndex=performers",
+    "https://gametime.co/college-football-bowl/sugar-bowl-georgia-vs-notre-dame-indiana-cfp-quarterfinal-tickets/1-1-2025-new-orleans-la-caesars-superdome/events/65d5243f363b32f109fd904f?queryId=af627150a8f5c2deaddfffcf0759c79e&resultPosition=2&searchIndex=performers&searchSessionId=c5b09307-a59f-4a8e-82e1-40ea24c64255",
+    "https://gametime.co/college-football-bowl/peach-bowl-arizona-state-vs-texas-clemson-cfp-quarterfinal-tickets/1-1-2025-atlanta-ga-mercedes-benz-stadium/events/65d5243faf72ca8204937dbc?queryId=55fbb43698d32a93ac46530ba9313127&resultPosition=2&searchIndex=performers",
+    "https://gametime.co/college-football-bowl/rose-bowl-oregon-vs-ohio-state-tennessee-cfp-quarterfinal-tickets/1-1-2025-pasadena-ca-the-rose-bowl/events/65d516296dfe6088fc663156?queryId=55fbb43698d32a93ac46530ba9313127&resultPosition=2&searchIndex=performers"
+]
+
+# Headers to mimic a browser request
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+}
+
+def normalize_row(row, fieldnames):
+    """Ensure the row contains exactly the keys in fieldnames."""
+    normalized = {field: row.get(field, "N/A") for field in fieldnames}
+    return normalized
+
+def main():
+    scrape_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"Scrape time: {scrape_time}")
+    tickets_by_url = []
+
+    # Define the field names (headers)
+    fieldnames = ['Section', 'Row_Details', 'Price', 'Event Name', 'Event Time', 'Time Scraped']
+
+    # Try to download the existing CSV file from S3 if it exists
+    try:
+        print(f"Fetching existing file: {file_name} from bucket: {bucket_name}")
+        file_obj = s3.get_object(Bucket=bucket_name, Key=file_name)
+        file_content = file_obj['Body'].read().decode('utf-8')
+        existing_data = list(csv.DictReader(io.StringIO(file_content)))
+    except s3.exceptions.NoSuchKey:
+        print(f"No existing file found. Starting with empty data.")
+        existing_data = []
+
+    # Open the file path as an in-memory string buffer to write data
+    with io.StringIO() as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+
+        # Always write headers, no matter if the file is empty or contains data
+        print("Writing headers to CSV.")
+        writer.writeheader()
+
+        # Add existing data (normalize rows for safety)
+        for row in existing_data:
+            normalized_row = normalize_row(row, fieldnames)
+            writer.writerow(normalized_row)
+
+        # Scrape each URL and add new data
+        for url in urls:
+            print(f"Scraping {url}...")
+            response = requests.get(url, headers=headers)
+
+            if response.status_code != 200:
+                print(f"Failed to fetch {url}, status code: {response.status_code}")
+                continue  # Skip to the next URL if the request fails
+
+            # Parse HTML content
+            soup = BeautifulSoup(response.content, "html.parser")
+
+            # Extract ticket information
+            tickets = []
+            for card in soup.select(".pages-Event-components-ListingCard-ListingCard-module__listing-card"):
+                section = card.select_one(".pages-Event-components-ListingCard-ListingCard-module__section-name")
+                row_details = card.select_one(".pages-Event-components-ListingCard-ListingCard-module__seat-details-row")
+                price = card.select_one(".pages-Event-components-ListingCard-ListingCard-module__price-info")
+                title_tag = soup.find("title")
+
+                # Extract details, ensuring they exist
+                section = section.text if section else "N/A"
+                row_details = row_details.text if row_details else "N/A"
+                price = price.text.strip() if price else "N/A"
+                event_name = title_tag.text.split(" Tickets - ")[0] if title_tag else "N/A"
+
+                # Extract the time from the specific HTML structure
+                time_element = soup.select_one(".ui-Menu-Menu-module__label span")
+                event_time = time_element.text.strip() if time_element else "N/A"
+
+                # Clean the price (remove $ and /ea)
+                if price.count('$') > 1:
+                    second_dollar_pos = price.find('$', price.find('$') + 1)
+                    price = price[second_dollar_pos:].strip()
+
+                price = price.replace('$', '').replace('/ea', '').strip()
+
+                # Append ticket information
+                ticket = {
+                    'Section': section,
+                    'Row_Details': row_details,
+                    'Price': price,
+                    'Event Name': event_name,
+                    'Event Time': event_time,
+                    'Time Scraped': scrape_time
+                }
+                tickets.append(ticket)
+
+            # Store tickets for this URL in the list
+            tickets_by_url.extend(tickets)
+
+        # Write the newly scraped tickets to the file
+        print(f"Adding {len(tickets_by_url)} new tickets to the CSV.")
+        for ticket in tickets_by_url:
+            normalized_ticket = normalize_row(ticket, fieldnames)
+            writer.writerow(normalized_ticket)
+
+        # Debugging: Print CSV content before upload
+        csv_content = file.getvalue()
+        print("CSV content preview:")
+        print(csv_content)
+
+        # Upload the updated file back to S3
+        try:
+            s3.put_object(Body=csv_content, Bucket=bucket_name, Key=file_name)
+            print(f"File {file_name} updated successfully on S3.")
+        except Exception as e:
+            print(f"Error uploading file: {e}")
+
+# Lambda handler function
+def lambda_handler(event, context):
+    main()
+```
+
+# Analysis
+
+## Data Cleaning
+```{r}
+library(tidyverse)
+Tickets <- read.csv("~/Downloads/tickets_grouped_by_url (22).csv")
+
+Tickets_clean <- Tickets %>% 
+  filter(Section != "N/A") %>% 
+  mutate(Event.Name = case_when(
+    Event.Name == "Fiesta Bowl: Boise State vs Penn State/SMU - CFP Quarterfinal" ~ "Fiesta Bowl: Boise State vs Penn State - CFP Quarterfinal",
+    Event.Name == "Sugar Bowl: Georgia vs Notre Dame/Indiana - CFP Quarterfinal" ~ "Sugar Bowl: Georgia vs Notre Dame - CFP Quarterfinal",
+    Event.Name == "Peach Bowl: Arizona State vs Texas/Clemson - CFP Quarterfinal" ~ "Peach Bowl: Arizona State vs Texas - CFP Quarterfinal",
+    Event.Name == "Rose Bowl: Oregon vs Ohio State/Tennessee - CFP Quarterfinal" ~ "Rose Bowl: Oregon vs Ohio State - CFP Quarterfinal",
+    TRUE ~ Event.Name
+  )) %>%
+  mutate(Event.Name = case_when(
+    Event.Name == "Sugar Bowl: Georgia vs Notre Dame - CFP Quarterfinal" ~ "Sugar Bowl: Georgia vs Notre Dame",
+    Event.Name == "Fiesta Bowl: Boise State vs Penn State - CFP Quarterfinal" ~ "Fiesta Bowl: Boise State vs Penn State",
+    Event.Name == "Peach Bowl: Arizona State vs Texas - CFP Quarterfinal" ~ "Peach Bowl: Arizona State vs Texas",
+    Event.Name == "Rose Bowl: Oregon vs Ohio State - CFP Quarterfinal" ~ "Rose Bowl: Oregon vs Ohio State",
+  )) %>% 
+  separate(Row_Details, into = c("section_area", "row_number"), sep = ",") %>%
+  mutate(row_number = gsub("Row ", "", row_number)) %>% 
+  mutate(Price = as.numeric(Price)) %>% 
+    mutate(
+    Time.Scraped = ymd_hms(Time.Scraped),  # Convert to datetime
+    Scraped.Date = as.Date(Time.Scraped),  # Extract date
+    Scraped.Hour = hour(Time.Scraped),     # Extract hour
+    Scraped.Day = wday(Time.Scraped, label = TRUE)  # Extract day of the week
+  ) %>% 
+  filter(!is.na(Price))
+
+
+### Separate into different bowls for analysis
+Sugar <- Tickets_clean %>% 
+  filter(Event.Name == "Sugar Bowl: Georgia vs Notre Dame")
+
+Fiesta <- Tickets_clean %>% 
+  filter(Event.Name == "Fiesta Bowl: Boise State vs Penn State")
+
+Peach <- Tickets_clean %>% 
+  filter(Event.Name == "Peach Bowl: Arizona State vs Texas")
+
+Rose <- Tickets_clean %>% 
+  filter(Event.Name == "Rose Bowl: Oregon vs Ohio State")
+```
+## Mean Ticket Price by Bowl Game
+```{r}
+# Summarize mean price over time for each bowl
+Sugar_summary <- Sugar %>%
+  group_by(Time.Scraped) %>%
+  summarise(mean_price = mean(Price, na.rm = TRUE), .groups = "drop") %>%
+  mutate(Bowl = "Sugar Bowl")
+
+Fiesta_summary <- Fiesta %>%
+  group_by(Time.Scraped) %>%
+  summarise(mean_price = mean(Price, na.rm = TRUE), .groups = "drop") %>%
+  mutate(Bowl = "Fiesta Bowl")
+
+Peach_summary <- Peach %>%
+  group_by(Time.Scraped) %>%
+  summarise(mean_price = mean(Price, na.rm = TRUE), .groups = "drop") %>%
+  mutate(Bowl = "Peach Bowl")
+
+Rose_summary <- Rose %>%
+  group_by(Time.Scraped) %>%
+  summarise(mean_price = mean(Price, na.rm = TRUE), .groups = "drop") %>%
+  mutate(Bowl = "Rose Bowl")
+
+# Combine all summaries
+Bowl_summary <- bind_rows(Sugar_summary, Fiesta_summary, Peach_summary, Rose_summary)
+
+
+ggplot(Bowl_summary, aes(x = Time.Scraped, y = mean_price, color = Bowl)) +
+  geom_line(size = 1) +
+  labs(
+    title = "Mean Ticket Prices Over Time for Bowl Games",
+    x = "Time Scraped",
+    y = "Mean Price",
+    color = "Bowl Game"
+  ) +
+  theme_minimal()
+```
+
+## Section Mean Price by Bowl Game
+```{r}
+Sugar_summary <- Sugar %>%
+  group_by(Time.Scraped, Section) %>%
+  summarise(mean_price = mean(Price, na.rm = TRUE), .groups = "drop") %>%
+  mutate(Bowl = "Sugar Bowl")
+
+Fiesta_summary <- Fiesta %>%
+  group_by(Time.Scraped, Section) %>%
+  summarise(mean_price = mean(Price, na.rm = TRUE), .groups = "drop") %>%
+  mutate(Bowl = "Fiesta Bowl")
+
+Peach_summary <- Peach %>%
+  group_by(Time.Scraped, Section) %>%
+  summarise(mean_price = mean(Price, na.rm = TRUE), .groups = "drop") %>%
+  mutate(Bowl = "Peach Bowl")
+
+Rose_summary <- Rose %>%
+  group_by(Time.Scraped, Section) %>%
+  summarise(mean_price = mean(Price, na.rm = TRUE), .groups = "drop") %>%
+  mutate(Bowl = "Rose Bowl")
+
+
+# Plotting the data by Section
+ggplot(Sugar_summary, aes(x = Time.Scraped, y = mean_price, color = as.factor(Section))) +
+  geom_line(size = 1) +
+  labs(
+    title = "Mean Ticket Prices Over Time by Section for Sugar Bowl Game",
+    x = "Time Scraped",
+    y = "Mean Price",
+    color = "Section"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+ggplot(Peach_summary, aes(x = Time.Scraped, y = mean_price, color = as.factor(Section))) +
+  geom_line(size = 1) +
+  labs(
+    title = "Mean Ticket Prices Over Time by Section for Peach Bowl Game",
+    x = "Time Scraped",
+    y = "Mean Price",
+    color = "Section"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+ggplot(Fiesta_summary, aes(x = Time.Scraped, y = mean_price, color = as.factor(Section))) +
+  geom_line(size = 1) +
+  labs(
+    title = "Mean Ticket Prices Over Time by Section for Fiesta Bowl Games",
+    x = "Time Scraped",
+    y = "Mean Price",
+    color = "Section"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+ggplot(Rose_summary, aes(x = Time.Scraped, y = mean_price, color = as.factor(Section))) +
+  geom_line(size = 1) +
+  labs(
+    title = "Mean Ticket Prices Over Time by Section for Rose Bowl Game",
+    x = "Time Scraped",
+    y = "Mean Price",
+    color = "Section"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "right")
+```
+
+## Row Number Analysis
+```{r}
+Sugar_summary_row <- Tickets_clean %>%
+  group_by(row_number) %>%
+  summarise(mean_price = mean(Price, na.rm = TRUE), .groups = "drop") %>%
+  mutate(row_number = as.numeric(trimws(as.character(row_number)))) %>%
+  arrange(row_number) %>%
+  mutate(row_number = factor(row_number, levels = sort(unique(row_number)))) %>% 
+  filter(!is.na(row_number))
+
+
+ggplot(Sugar_summary_row, aes(x = as.numeric(row_number), y = mean_price)) +
+  geom_col(fill = "red") +
+  labs(title = "Ticket Prices by Row for All Bowls", x = "Row Number", y = "Mean Price") +
+  scale_x_continuous(breaks = seq(min(as.numeric(Sugar_summary_row$row_number)), 
+                                  max(as.numeric(Sugar_summary_row$row_number)), 
+                                  by = 5)) +
+  theme_minimal()
+```
+
