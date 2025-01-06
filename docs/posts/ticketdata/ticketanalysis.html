@@ -198,7 +198,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="overview" class="level1"><h1>Overview</h1>
 <p>I leveraged AWS services—Lambda, EventBridge, and S3—to automate the web scraping of ticket prices for the College Football Playoff semifinals. The goal was to analyze pricing trends and determine the best time to purchase tickets. By utilizing Python for the scraping, I created a scalable and efficient solution that ran without manual intervention.</p>
 <p>I used AWS Lambda to host and execute the Python web scraping script. This serverless approach allowed the scraping process to run on demand, ensuring cost efficiency and eliminating the need to manage infrastructure. EventBridge was configured to trigger the Lambda function at regular intervals, automating the data collection process without the need for cronjobs. The scraped data was stored in an S3 bucket</p>
-<p>My main goal of this project was to learn AWS Service but I still did a quick analysis!</p>
+<p>My main goal of this project was to learn AWS but I still did a quick analysis!</p>
 </section><section id="aws-lambda-python-code" class="level1"><h1>AWS Lambda Python Code</h1>
 <div class="cell">
 <details class="code-fold"><summary>Code</summary><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>import requests</span>
