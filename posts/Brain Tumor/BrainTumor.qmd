@@ -1,9 +1,9 @@
 ---
 title: "Brain Tumor Classification with TensorFlow and MobileNetV2"
-date: 07-02-2025 
+date: 07-07-2025 
 author: Nathan Bresette 
 categories: [Medical Imaging, Deep Learning, TensorFlow, MobileNetV2]
-image: "GradCam"
+image: "GradCam.png"
 
 execute:
   python: .venv/bin/python
