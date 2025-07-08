@@ -198,7 +198,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   
 
 
-</header><section id="introduction" class="level2"><h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+</header><p>Brain tumor classification using MobileNetV2 on MRI scans with preprocessing, augmentation, model evaluation, and GradCam images</p>
+<section id="introduction" class="level2"><h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 <p>Medical imaging plays a critical role in diagnosing and managing brain tumors, which vary widely in type and severity. Automating tumor classification using neural networks can support radiologists by providing faster, consistent, and potentially more accurate assessments. This project aims to learn how to classify brain tumor MRI images into four categories—glioma, meningioma, pituitary tumors, and no tumor by using convolutional neural networks (CNNs). Specifically, I leveraged transfer learning with the lightweight MobileNetV2 architecture, pretrained on ImageNet, to adapt it to the medical imaging domain. Through this project, the goals include gaining practical experience in medical image classification, preprocessing real-world MRI datasets, and evaluating model performance using various metrics and visualization techniques such as Grad-CAM.</p>
 </section><section id="background-on-tumor-types" class="level2"><h2 class="anchored" data-anchor-id="background-on-tumor-types">Background on Tumor Types</h2>
 <ul>
@@ -572,43 +573,43 @@ pituitary    1174         283</code></pre>
 <span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>y_pred <span class="op">=</span> model.predict(val_gen)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output cell-output-stdout">
 <pre><code>
-[1m 1/36[0m [37m━━━━━━━━━━━━━━━━━━━━[0m [1m32s[0m 931ms/step
-[1m 2/36[0m [32m━[0m[37m━━━━━━━━━━━━━━━━━━━[0m [1m10s[0m 300ms/step
-[1m 3/36[0m [32m━[0m[37m━━━━━━━━━━━━━━━━━━━[0m [1m9s[0m 294ms/step 
-[1m 4/36[0m [32m━━[0m[37m━━━━━━━━━━━━━━━━━━[0m [1m9s[0m 288ms/step
-[1m 5/36[0m [32m━━[0m[37m━━━━━━━━━━━━━━━━━━[0m [1m8s[0m 289ms/step
-[1m 6/36[0m [32m━━━[0m[37m━━━━━━━━━━━━━━━━━[0m [1m8s[0m 287ms/step
-[1m 7/36[0m [32m━━━[0m[37m━━━━━━━━━━━━━━━━━[0m [1m8s[0m 286ms/step
-[1m 8/36[0m [32m━━━━[0m[37m━━━━━━━━━━━━━━━━[0m [1m7s[0m 285ms/step
-[1m 9/36[0m [32m━━━━━[0m[37m━━━━━━━━━━━━━━━[0m [1m7s[0m 284ms/step
-[1m10/36[0m [32m━━━━━[0m[37m━━━━━━━━━━━━━━━[0m [1m7s[0m 282ms/step
-[1m11/36[0m [32m━━━━━━[0m[37m━━━━━━━━━━━━━━[0m [1m7s[0m 281ms/step
-[1m12/36[0m [32m━━━━━━[0m[37m━━━━━━━━━━━━━━[0m [1m6s[0m 280ms/step
-[1m13/36[0m [32m━━━━━━━[0m[37m━━━━━━━━━━━━━[0m [1m6s[0m 279ms/step
-[1m14/36[0m [32m━━━━━━━[0m[37m━━━━━━━━━━━━━[0m [1m6s[0m 278ms/step
-[1m15/36[0m [32m━━━━━━━━[0m[37m━━━━━━━━━━━━[0m [1m5s[0m 278ms/step
-[1m16/36[0m [32m━━━━━━━━[0m[37m━━━━━━━━━━━━[0m [1m5s[0m 277ms/step
-[1m17/36[0m [32m━━━━━━━━━[0m[37m━━━━━━━━━━━[0m [1m5s[0m 276ms/step
-[1m18/36[0m [32m━━━━━━━━━━[0m[37m━━━━━━━━━━[0m [1m4s[0m 276ms/step
-[1m19/36[0m [32m━━━━━━━━━━[0m[37m━━━━━━━━━━[0m [1m4s[0m 275ms/step
-[1m20/36[0m [32m━━━━━━━━━━━[0m[37m━━━━━━━━━[0m [1m4s[0m 275ms/step
-[1m21/36[0m [32m━━━━━━━━━━━[0m[37m━━━━━━━━━[0m [1m4s[0m 275ms/step
-[1m22/36[0m [32m━━━━━━━━━━━━[0m[37m━━━━━━━━[0m [1m3s[0m 275ms/step
-[1m23/36[0m [32m━━━━━━━━━━━━[0m[37m━━━━━━━━[0m [1m3s[0m 275ms/step
-[1m24/36[0m [32m━━━━━━━━━━━━━[0m[37m━━━━━━━[0m [1m3s[0m 275ms/step
-[1m25/36[0m [32m━━━━━━━━━━━━━[0m[37m━━━━━━━[0m [1m3s[0m 275ms/step
-[1m26/36[0m [32m━━━━━━━━━━━━━━[0m[37m━━━━━━[0m [1m2s[0m 275ms/step
-[1m27/36[0m [32m━━━━━━━━━━━━━━━[0m[37m━━━━━[0m [1m2s[0m 275ms/step
-[1m28/36[0m [32m━━━━━━━━━━━━━━━[0m[37m━━━━━[0m [1m2s[0m 275ms/step
-[1m29/36[0m [32m━━━━━━━━━━━━━━━━[0m[37m━━━━[0m [1m1s[0m 275ms/step
-[1m30/36[0m [32m━━━━━━━━━━━━━━━━[0m[37m━━━━[0m [1m1s[0m 276ms/step
-[1m31/36[0m [32m━━━━━━━━━━━━━━━━━[0m[37m━━━[0m [1m1s[0m 278ms/step
-[1m32/36[0m [32m━━━━━━━━━━━━━━━━━[0m[37m━━━[0m [1m1s[0m 279ms/step
-[1m33/36[0m [32m━━━━━━━━━━━━━━━━━━[0m[37m━━[0m [1m0s[0m 280ms/step
-[1m34/36[0m [32m━━━━━━━━━━━━━━━━━━[0m[37m━━[0m [1m0s[0m 280ms/step
-[1m35/36[0m [32m━━━━━━━━━━━━━━━━━━━[0m[37m━[0m [1m0s[0m 280ms/step
-[1m36/36[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m0s[0m 290ms/step
-[1m36/36[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m11s[0m 290ms/step</code></pre>
+[1m 1/36[0m [37m━━━━━━━━━━━━━━━━━━━━[0m [1m37s[0m 1s/step
+[1m 2/36[0m [32m━[0m[37m━━━━━━━━━━━━━━━━━━━[0m [1m11s[0m 332ms/step
+[1m 3/36[0m [32m━[0m[37m━━━━━━━━━━━━━━━━━━━[0m [1m11s[0m 342ms/step
+[1m 4/36[0m [32m━━[0m[37m━━━━━━━━━━━━━━━━━━[0m [1m10s[0m 326ms/step
+[1m 5/36[0m [32m━━[0m[37m━━━━━━━━━━━━━━━━━━[0m [1m9s[0m 319ms/step 
+[1m 6/36[0m [32m━━━[0m[37m━━━━━━━━━━━━━━━━━[0m [1m9s[0m 322ms/step
+[1m 7/36[0m [32m━━━[0m[37m━━━━━━━━━━━━━━━━━[0m [1m9s[0m 324ms/step
+[1m 8/36[0m [32m━━━━[0m[37m━━━━━━━━━━━━━━━━[0m [1m9s[0m 324ms/step
+[1m 9/36[0m [32m━━━━━[0m[37m━━━━━━━━━━━━━━━[0m [1m8s[0m 324ms/step
+[1m10/36[0m [32m━━━━━[0m[37m━━━━━━━━━━━━━━━[0m [1m8s[0m 326ms/step
+[1m11/36[0m [32m━━━━━━[0m[37m━━━━━━━━━━━━━━[0m [1m8s[0m 328ms/step
+[1m12/36[0m [32m━━━━━━[0m[37m━━━━━━━━━━━━━━[0m [1m7s[0m 330ms/step
+[1m13/36[0m [32m━━━━━━━[0m[37m━━━━━━━━━━━━━[0m [1m7s[0m 331ms/step
+[1m14/36[0m [32m━━━━━━━[0m[37m━━━━━━━━━━━━━[0m [1m7s[0m 331ms/step
+[1m15/36[0m [32m━━━━━━━━[0m[37m━━━━━━━━━━━━[0m [1m7s[0m 334ms/step
+[1m16/36[0m [32m━━━━━━━━[0m[37m━━━━━━━━━━━━[0m [1m6s[0m 335ms/step
+[1m17/36[0m [32m━━━━━━━━━[0m[37m━━━━━━━━━━━[0m [1m6s[0m 335ms/step
+[1m18/36[0m [32m━━━━━━━━━━[0m[37m━━━━━━━━━━[0m [1m5s[0m 333ms/step
+[1m19/36[0m [32m━━━━━━━━━━[0m[37m━━━━━━━━━━[0m [1m5s[0m 332ms/step
+[1m20/36[0m [32m━━━━━━━━━━━[0m[37m━━━━━━━━━[0m [1m5s[0m 331ms/step
+[1m21/36[0m [32m━━━━━━━━━━━[0m[37m━━━━━━━━━[0m [1m4s[0m 329ms/step
+[1m22/36[0m [32m━━━━━━━━━━━━[0m[37m━━━━━━━━[0m [1m4s[0m 328ms/step
+[1m23/36[0m [32m━━━━━━━━━━━━[0m[37m━━━━━━━━[0m [1m4s[0m 328ms/step
+[1m24/36[0m [32m━━━━━━━━━━━━━[0m[37m━━━━━━━[0m [1m3s[0m 328ms/step
+[1m25/36[0m [32m━━━━━━━━━━━━━[0m[37m━━━━━━━[0m [1m3s[0m 329ms/step
+[1m26/36[0m [32m━━━━━━━━━━━━━━[0m[37m━━━━━━[0m [1m3s[0m 328ms/step
+[1m27/36[0m [32m━━━━━━━━━━━━━━━[0m[37m━━━━━[0m [1m2s[0m 326ms/step
+[1m28/36[0m [32m━━━━━━━━━━━━━━━[0m[37m━━━━━[0m [1m2s[0m 325ms/step
+[1m29/36[0m [32m━━━━━━━━━━━━━━━━[0m[37m━━━━[0m [1m2s[0m 324ms/step
+[1m30/36[0m [32m━━━━━━━━━━━━━━━━[0m[37m━━━━[0m [1m1s[0m 323ms/step
+[1m31/36[0m [32m━━━━━━━━━━━━━━━━━[0m[37m━━━[0m [1m1s[0m 321ms/step
+[1m32/36[0m [32m━━━━━━━━━━━━━━━━━[0m[37m━━━[0m [1m1s[0m 322ms/step
+[1m33/36[0m [32m━━━━━━━━━━━━━━━━━━[0m[37m━━[0m [1m0s[0m 322ms/step
+[1m34/36[0m [32m━━━━━━━━━━━━━━━━━━[0m[37m━━[0m [1m0s[0m 322ms/step
+[1m35/36[0m [32m━━━━━━━━━━━━━━━━━━━[0m[37m━[0m [1m0s[0m 323ms/step
+[1m36/36[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m0s[0m 335ms/step
+[1m36/36[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m13s[0m 335ms/step</code></pre>
 </div>
 <details class="code-fold"><summary>Code</summary><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>y_pred_classes <span class="op">=</span> np.argmax(y_pred, axis<span class="op">=</span><span class="dv">1</span>)</span>
 <span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -726,19 +727,19 @@ weighted avg       0.82      0.83      0.82      1143</code></pre>
 <span id="cb29-76"><a href="#cb29-76" aria-hidden="true" tabindex="-1"></a>gradcam_on_batch(val_gen, model, last_conv_layer_name<span class="op">=</span><span class="st">"Conv_1"</span>, num_images<span class="op">=</span><span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details><div class="cell-output cell-output-stdout">
 <pre><code>
-[1m1/1[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m0s[0m 450ms/step
-[1m1/1[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m0s[0m 460ms/step
+[1m1/1[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m0s[0m 475ms/step
+[1m1/1[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m0s[0m 484ms/step
 Image 1: True = glioma, Predicted = glioma (Correct)
 
-[1m1/1[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m0s[0m 25ms/step
-[1m1/1[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m0s[0m 34ms/step
+[1m1/1[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m0s[0m 29ms/step
+[1m1/1[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m0s[0m 38ms/step
 Image 2: True = pituitary, Predicted = pituitary (Correct)
 
 [1m1/1[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m0s[0m 25ms/step
 [1m1/1[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m0s[0m 34ms/step
 
-[1m1/1[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m0s[0m 24ms/step
-[1m1/1[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m0s[0m 33ms/step
+[1m1/1[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m0s[0m 27ms/step
+[1m1/1[0m [32m━━━━━━━━━━━━━━━━━━━━[0m[37m[0m [1m0s[0m 36ms/step
 Image 4: True = notumor, Predicted = notumor (Correct)</code></pre>
 </div>
 <div class="cell-output-display">
