@@ -21,6 +21,8 @@ format:
     warning: false
 ---
 
+Brain tumor classification using MobileNetV2 on MRI scans with preprocessing, augmentation, model evaluation, and GradCam images
+
 ## Introduction
 Medical imaging plays a critical role in diagnosing and managing brain tumors, which vary widely in type and severity. Automating tumor classification using neural networks can support radiologists by providing faster, consistent, and potentially more accurate assessments. This project aims to learn how to classify brain tumor MRI images into four categories—glioma, meningioma, pituitary tumors, and no tumor by using convolutional neural networks (CNNs). Specifically, I leveraged transfer learning with the lightweight MobileNetV2 architecture, pretrained on ImageNet, to adapt it to the medical imaging domain. Through this project, the goals include gaining practical experience in medical image classification, preprocessing real-world MRI datasets, and evaluating model performance using various metrics and visualization techniques such as Grad-CAM.
 

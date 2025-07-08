@@ -1,6 +1,6 @@
 ---
 title: "MRI Super-Resolution with Diffusion Models"
-date: 07-02-2025 
+date: 06-20-2025 
 author: Nathan Bresette 
 categories: [Medical Imaging, Deep Learning, PyTorch, Diffusion Models]
 image: "mriddpm.png"
@@ -17,6 +17,8 @@ format:
     code-overflow: wrap
     warning: false
 ---
+
+MRI super-resolution using diffusion models on limited hardware with data augmentation and evaluation metrics.
 
 # Introduction
 

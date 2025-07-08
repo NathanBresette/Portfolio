@@ -243,7 +243,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="set-data-paths" class="level1">
 <h1>0. Set Data Paths</h1>
-<div id="9180f7c2" class="cell" data-execution_count="1">
+<div id="35ef5c74" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
@@ -267,7 +267,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
 <li>This approach balances preserving anatomical info with practical resource constraints.</li>
 </ul>
-<div id="4fbc511f" class="cell" data-execution_count="2">
+<div id="1696fd37" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -318,7 +318,7 @@ Converted OAS1_0026_MR1</code></pre>
 <ul>
 <li>A sample image looks good and ready!</li>
 </ul>
-<div id="d3f763ce" class="cell" data-execution_count="3">
+<div id="ae74176a" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>img_path <span class="op">=</span> os.path.expanduser(<span class="st">"~/oasis_project/data/PNG_SLICES/OAS1_0016_MR1.png"</span>)</span>
@@ -346,7 +346,7 @@ Converted OAS1_0026_MR1</code></pre>
 <li>Copying files creates clear and isolated train/val folders, simplifying downstream data loading.</li>
 <li>Due to low computing power, I only have 6 training images and 2 validation images.</li>
 </ul>
-<div id="0da7d4ce" class="cell" data-execution_count="4">
+<div id="0dbff064" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> random</span>
@@ -395,7 +395,7 @@ Validation images after split: 2</code></pre>
 <li><p>Bicubic downsampling simulates realistic low-resolution images for super-resolution training.</p></li>
 <li><p>Using PyTorch Dataset allows efficient data loading with lazy evaluation and easy batching.</p></li>
 </ul>
-<div id="e90d3bf8" class="cell" data-execution_count="5">
+<div id="ea75b968" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
@@ -457,7 +457,7 @@ Validation images after split: 2</code></pre>
 <li><p>Concatenating upsampled LR and noisy HR images conditions the model for super-resolution.</p></li>
 <li><p>Saving model weights lets me reuse without retraining, saving time and compute.</p></li>
 </ul>
-<div id="cfd8ea91" class="cell" data-execution_count="6">
+<div id="3a88b9a6" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
@@ -526,22 +526,22 @@ Validation images after split: 2</code></pre>
 <span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a>    train_diffusion()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>Epoch 0, Batch 0, Loss: 0.8739
-Epoch 1, Batch 0, Loss: 0.5866
-Epoch 2, Batch 0, Loss: 0.5006
-Epoch 3, Batch 0, Loss: 0.2948
-Epoch 4, Batch 0, Loss: 0.1898
-Epoch 5, Batch 0, Loss: 0.2773
-Epoch 6, Batch 0, Loss: 0.3815
-Epoch 7, Batch 0, Loss: 0.1328
-Epoch 8, Batch 0, Loss: 0.1246
-Epoch 9, Batch 0, Loss: 0.1109</code></pre>
+<pre><code>Epoch 0, Batch 0, Loss: 0.8737
+Epoch 1, Batch 0, Loss: 0.5808
+Epoch 2, Batch 0, Loss: 0.3375
+Epoch 3, Batch 0, Loss: 0.1974
+Epoch 4, Batch 0, Loss: 0.4198
+Epoch 5, Batch 0, Loss: 0.2084
+Epoch 6, Batch 0, Loss: 0.4413
+Epoch 7, Batch 0, Loss: 0.1371
+Epoch 8, Batch 0, Loss: 0.1174
+Epoch 9, Batch 0, Loss: 0.1470</code></pre>
 </div>
 </div>
 </section>
 <section id="super-resolution-inference" class="level1">
 <h1>6. Super Resolution Inference</h1>
-<div id="5acf8cc9" class="cell" data-execution_count="7">
+<div id="43f378d1" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tqdm <span class="im">import</span> tqdm </span>
@@ -584,7 +584,7 @@ Epoch 9, Batch 0, Loss: 0.1109</code></pre>
 <span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (noisy_output.squeeze().cpu().numpy() <span class="op">+</span> <span class="dv">1</span>) <span class="op">*</span> <span class="fl">127.5</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="7d0c68c5" class="cell" data-execution_count="8">
+<div id="d2dc2110" class="cell" data-execution_count="8">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>val_dataset <span class="op">=</span> MRIDataset(val_dir, hr_size<span class="op">=</span><span class="dv">256</span>, lr_size<span class="op">=</span><span class="dv">128</span>, augment<span class="op">=</span><span class="va">False</span>)</span>
@@ -623,7 +623,7 @@ Epoch 9, Batch 0, Loss: 0.1109</code></pre>
 </section>
 <section id="evaluation" class="level1">
 <h1>7. Evaluation</h1>
-<div id="0468a8c3" class="cell" data-execution_count="9">
+<div id="5358788d" class="cell" data-execution_count="9">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> skimage.metrics <span class="im">import</span> peak_signal_noise_ratio <span class="im">as</span> psnr</span>
@@ -659,8 +659,8 @@ Epoch 9, Batch 0, Loss: 0.1109</code></pre>
 <span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>evaluate(model, val_dir)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>Mean PSNR: 6.52 dB
-Mean SSIM: 0.1061</code></pre>
+<pre><code>Mean PSNR: 7.00 dB
+Mean SSIM: 0.1611</code></pre>
 </div>
 </div>
 <p>The mean PSNR (Peak Signal-to-Noise Ratio) of 8.09 dB indicates that the super-resolved images differ significantly from the truth. 30 dB are generally considered good in image reconstruction. The mean SSIM (Structural Similarity Index) of 0.1653 is also very low, suggesting that the model failed to preserve important structural and perceptual features of the original MRI images—ideally. SSIM values should be closer to 1.0. Together, these metrics confirm that the model did not learn to effectively reconstruct high-quality anatomical detail from low-resolution input.</p>
