@@ -20,6 +20,7 @@ format:
 
 Performed web scraping using Selenium and BeautifulSoup, followed by an in-depth analysis in that included Principal Component Analysis, XGBoost, and neural networks.
 
+I unfortunately lost my data and do not want to rescrape it since it is now a year later but I will leave the project here!
 
 ## Abstract
 This project presents an analysis of college basketball team performance based on data from men's NCAA Basketball. After merging the datasets from haslametrics and teamrankings along with data cleaning and feature engineering in R, the dataset consisted of 16 columns with 361 rows.
@@ -184,7 +185,7 @@ merged_df.to_excel(f'{desktop_path}/merged_data.xlsx', index=False)
 All further code performed in R:
 
 Once the data has been combined into one data frame, there are over 100 variables. Using dplyr, 16 columns are selected, renamed for easier readability, mutated to correct variable type (numeric, factor, etc), and a new variable is feauture engineered to split the ranks into three categories of Ranked, Top 50%, and Bottom 50%.
-```{r}
+```{r, eval=FALSE}
 library(readxl)
 library(tidyverse)
 merged_data <- read_excel("~/Desktop/merged_data.xlsx")
@@ -216,14 +217,14 @@ clean_data <- clean_data %>%
 ```
  
 The final data cleaning step is checking total NA values for each variable which there are none
-```{r}
+```{r, eval=FALSE}
 cbind(lapply(lapply(clean_data, is.na), sum))
 ``` 
 ## Exploratory Analysis
 
 ### Correlation and Scatter Plots
 The data exploration begins by looking at the correlation between variables. I created a function to make a correlation plot then if the correlation is above the absolute value of 0.6, it will plot the scatter plot of the two correlated variables. Due to the high correlation in this data, I have limited the output to only two of the scatterplots.	
-```{r}
+```{r, eval=FALSE}
 library(corrplot)
 
 compute_and_plot_correlation <- function(data, threshold = 0.6) {
@@ -272,7 +273,7 @@ for (i in seq_along(scatter_plots)) {
 
 ### Distributions - Histograms
 I also made a function to make histograms for all numeric variables to view the distributions. Because all of our variables are numeric, no bar charts were made to view the distribution of categorical variables.
-```{r}
+```{r, eval=FALSE}
 create_histograms_ggplot <- function(data) {
   # Get numeric variable names
   numeric_vars <- names(data)[sapply(data, is.numeric)]
@@ -308,7 +309,7 @@ hist_plots <- create_histograms_ggplot(clean_data)
 
 ## Principal Component Analysis (PCA)
 In our data exploration, the correlation plot showed the high correlation between our variables. Because of this, a principal component analysis was performed to reduce collinearity.  A scree plot was used to determine the number of components. Figure 5 shows the scree plot.
-```{r}
+```{r, eval=FALSE}
 library(htmlwidgets)
 library(plotly)
 
@@ -319,13 +320,13 @@ prin_comp <- prcomp(X, center = TRUE, scale. = TRUE)
 
 ### Scree Plot
 The scree plot shows there should be around 3 components to account for the most variance while also reducing the dimensions.
-```{r}
+```{r, eval=FALSE}
 plot(prin_comp, type = "l", main = "Scree Plot")
 ```
 
 ### 3D PCA
 A 3d plot with the three axes of the plot representing the first three principal components (PC1, PC2, and PC3). It also clusters the variable Ranked_Category very accurately. Although it clusters Ranked_Category well, it only accounts for 61.67% of the variance so we will not use it. 
-```{r}
+```{r, eval=FALSE}
 summ <- summary(prin_comp)
 summ$importance[2,]
 
@@ -358,7 +359,7 @@ saveWidget(fig, "interactive_plot.html")
 
 ## XGBoost Classification Model
 Due to the high colinearity between our variables, our model must be able to take it into account. This model will be for exploration use rather than predictive so that we can see what variables are important to be ranked higher at the end of the season.	
-```{r}
+```{r, eval=FALSE}
 #libs
 library(janitor)
 library(tidymodels)
@@ -370,7 +371,7 @@ library(kableExtra)
 
 
 ### Splitting into Training/Testing
-```{r}
+```{r, eval=FALSE}
 DATA <- clean_data %>% 
   select(-Rank)
 
@@ -387,7 +388,7 @@ DATA_folds
 ```
 
 ### Recipe
-```{r}
+```{r, eval=FALSE}
 DATA_rec <-
   recipe(Rank_Category ~ ., data = DATA_TRAIN) %>%
   step_unknown(all_nominal_predictors()) %>%
@@ -398,7 +399,7 @@ prep(DATA_rec) # checking prep
 
 
 ### Tuning Model
-```{r}
+```{r, eval=FALSE}
 xgb_spec <-
   boost_tree(
     trees = tune(),
@@ -416,7 +417,7 @@ xgb_workfl <- workflow(DATA_rec, xgb_spec)
 
 ### Race Anova 
 Our model will be an XGBoost that utilizes a racing ANOVA. Tidymodels will also be used so that we can tune trees, min_n, mtry, tree_depth, learn_rate, and loss_reduction. 
-```{r}
+```{r, eval=FALSE}
 library(finetune)
 doParallel::registerDoParallel()
 
@@ -432,7 +433,7 @@ xgb_rs <- tune_race_anova(
 
 ### Comparing Models
 The plot below shows the racing ANOVA as it picks out the best model
-```{r}
+```{r, eval=FALSE}
 anova <- plot_race(xgb_rs)
 
 anova +
@@ -445,11 +446,11 @@ anova +
 
 ### Best Model
 The following code is used to extract the best model
-```{r}
+```{r, eval=FALSE}
 show_best(xgb_rs)
 ```
 ### Metrics
-```{r}
+```{r, eval=FALSE}
 xgb_last <- xgb_workfl %>%
   finalize_workflow(select_best(xgb_rs, metric = "accuracy")) %>%
   last_fit(DATA_SPLIT)
@@ -459,7 +460,7 @@ xgb_last$.metrics
 
 ### Confusion Matrix
 The final model had an accuracy of 83.52 % for predicting 'Ranked_Category' and an AUC of 0.914. Although this is not the highest accuracy, the more important part is the importance of each variable for the model are Def_Eff, Win, Def_FG, Off_2p, and Off_TO as seen in the plot below. 
-```{r}
+```{r, eval=FALSE}
 DATA_pred <- collect_predictions(xgb_last)$.pred_class
 
 DATA_act <- DATA_TEST$Rank_Category
@@ -468,7 +469,7 @@ confusionMatrix(DATA_pred, DATA_act)
 ```
 
 ### VIP
-```{r}
+```{r, eval=FALSE}
 library(vip)
 vip <- extract_workflow(xgb_last) %>%
   extract_fit_parsnip() %>%
@@ -479,7 +480,7 @@ vip
 
 ## Neural Network
 Now that we know the important variables for 'Ranked Category', a neural network was performed to see how well we could predict it. The neural network was made in R using the command neuralnet(). The best neural network is seen in Figure 9 which had a 97.80% accuracy.
-```{r}
+```{r, eval=FALSE}
 library(neuralnet)
 library(caret)
 library(tidymodels)
@@ -498,7 +499,7 @@ NN <- neuralnet(Rank_Category ~ ., train_data, hidden = c(5,3), linear.output = 
 plot(NN, rep = "best")
 ```
 ### Confusion Matrix
-```{r}
+```{r, eval=FALSE}
 predicted_classes <- predict(NN, test_data)
 # Extract predicted class labels
 predicted_classes <- max.col(predicted_classes)

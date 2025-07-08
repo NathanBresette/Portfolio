@@ -1,0 +1,483 @@
+---
+title: "Brain Tumor Classification with TensorFlow and MobileNetV2"
+date: 07-02-2025 
+author: Nathan Bresette 
+categories: [Medical Imaging, Deep Learning, TensorFlow, MobileNetV2]
+image: "GradCam"
+
+execute:
+  python: .venv/bin/python
+  
+output:
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+format:
+  html:
+    code-link: true
+    code-fold: true
+    code-overflow: wrap
+    warning: false
+---
+
+## Introduction
+Medical imaging plays a critical role in diagnosing and managing brain tumors, which vary widely in type and severity. Automating tumor classification using neural networks can support radiologists by providing faster, consistent, and potentially more accurate assessments. This project aims to learn how to classify brain tumor MRI images into four categories—glioma, meningioma, pituitary tumors, and no tumor by using convolutional neural networks (CNNs). Specifically, I leveraged transfer learning with the lightweight MobileNetV2 architecture, pretrained on ImageNet, to adapt it to the medical imaging domain. Through this project, the goals include gaining practical experience in medical image classification, preprocessing real-world MRI datasets, and evaluating model performance using various metrics and visualization techniques such as Grad-CAM.
+
+## Background on Tumor Types
+
+- **Meningioma:**  
+  Tumors arising from the meninges (protective membranes covering brain/spinal cord). Usually benign and slow-growing but may cause pressure effects depending on size/location.
+
+- **Pituitary Tumors:**  
+  Tumors in the pituitary gland (hormone control center at brain base). Usually benign but can alter hormone production, causing various symptoms.
+
+- **Glioma:**  
+  Tumors originating from glial cells (which support neurons). Tend to be more aggressive and malignant (e.g., astrocytomas, glioblastomas).
+
+## Set the Python environment explicitly for reticulate
+```{r, output = FALSE}
+reticulate::use_python("/Users/nathanbresette/Documents/Portfolio/.venv/bin/python", required = TRUE)
+
+reticulate::py_config()
+```
+
+## Imports
+```{python}
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.metrics import Precision, Recall
+from sklearn.metrics import classification_report, confusion_matrix
+import seaborn as sns
+import pandas as pd
+import random
+from PIL import Image
+import matplotlib.pyplot as plt
+import visualkeras
+```
+
+## Download Dataset from Kaggle
+
+```{python}
+from kaggle.api.kaggle_api_extended import KaggleApi
+
+OUTPUT_DIR = "brain_tumor_classification/data/raw/kaggle_brain_tumor"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+def download():
+    api = KaggleApi()
+    api.authenticate()
+    dataset = "masoudnickparvar/brain-tumor-mri-dataset"
+    api.dataset_download_files(dataset, path=OUTPUT_DIR, unzip=True)
+    print("Dataset downloaded and extracted.")
+
+if __name__ == "__main__":
+    download()
+```
+
+## Preprocess Images
+- Resize images to 224x224 (MobileNetV2 standard)
+
+- Normalize pixel intensities later in data generator
+
+- Split into train (80%), validation (20%), test sets
+
+- Save file paths and labels as CSVs for efficient loading
+```{python}
+RAW_DIR = "brain_tumor_classification/data/raw/kaggle_brain_tumor"
+PROC_DIR = "brain_tumor_classification/data/processed/kaggle_brain_tumor"
+IMG_SIZE = (224, 224)
+SEED = 42
+random.seed(SEED)
+
+def preprocess():
+    train_dir = os.path.join(RAW_DIR, "Training")
+    test_dir = os.path.join(RAW_DIR, "Testing")
+
+    classes = ["glioma", "meningioma", "notumor", "pituitary"]
+
+    # Create output dirs
+    for split in ["train", "val", "test"]:
+        for cls in classes:
+            os.makedirs(os.path.join(PROC_DIR, split, cls), exist_ok=True)
+
+    # Load train+val images
+    train_val_images = []
+    for cls in classes:
+        cls_path = os.path.join(train_dir, cls)
+        for img_name in os.listdir(cls_path):
+            train_val_images.append((os.path.join(cls_path, img_name), cls))
+
+    random.shuffle(train_val_images)
+    n = len(train_val_images)
+    train_cutoff = int(0.8 * n)  # 80% train, 20% val
+
+    train_images = train_val_images[:train_cutoff]
+    val_images = train_val_images[train_cutoff:]
+
+    # Load test images
+    test_images = []
+    for cls in classes:
+        cls_path = os.path.join(test_dir, cls)
+        for img_name in os.listdir(cls_path):
+            test_images.append((os.path.join(cls_path, img_name), cls))
+
+    def save_split(images, split_name):
+        records = []
+        for i, (src_path, label) in enumerate(images):
+            img = Image.open(src_path).convert("RGB")
+            img = img.resize(IMG_SIZE)
+            filename = f"{label}_{i:05d}.png"
+            out_path = os.path.join(PROC_DIR, split_name, label, filename)
+            img.save(out_path)
+            records.append({"filepath": out_path, "label": label})
+        df = pd.DataFrame(records)
+        df.to_csv(os.path.join(PROC_DIR, f"{split_name}_labels.csv"), index=False)
+
+    save_split(train_images, "train")
+    save_split(val_images, "val")
+    save_split(test_images, "test")
+
+    print("Preprocessing complete!")
+
+if __name__ == "__main__":
+    preprocess()
+
+
+```
+
+## Build Model
+- Load CSV label files
+- Map labels to numeric classes
+- Create image data generators with pixel rescaling
+```{python}
+PROC_DIR = "brain_tumor_classification/data/processed/kaggle_brain_tumor"
+IMG_SIZE = (224, 224)
+BATCH_SIZE = 32
+
+train_df = pd.read_csv(os.path.join(PROC_DIR, "train_labels.csv"))
+val_df = pd.read_csv(os.path.join(PROC_DIR, "val_labels.csv"))
+
+label_map = {label: idx for idx, label in enumerate(sorted(train_df['label'].unique()))}
+train_df["class"] = train_df["label"].map(label_map)
+val_df["class"] = val_df["label"].map(label_map)
+
+datagen = ImageDataGenerator(rescale=1./255)
+
+train_gen = datagen.flow_from_dataframe(
+    train_df,
+    x_col="filepath",
+    y_col="label",
+    target_size=IMG_SIZE,
+    class_mode="categorical",
+    batch_size=BATCH_SIZE,
+    shuffle=True,
+    seed=42
+)
+
+val_gen = datagen.flow_from_dataframe(
+    val_df,
+    x_col="filepath",
+    y_col="label",
+    target_size=IMG_SIZE,
+    class_mode="categorical",
+    batch_size=BATCH_SIZE,
+    shuffle=False
+)
+
+```
+
+## Visualize Dataset Distribution
+Distribution of our four classes which are relatively very balanced 
+```{python}
+train_counts = train_df['label'].value_counts().reset_index()
+train_counts.columns = ['Class', 'Count']
+train_counts['Dataset'] = 'Train'
+
+val_counts = val_df['label'].value_counts().reset_index()
+val_counts.columns = ['Class', 'Count']
+val_counts['Dataset'] = 'Validation'
+
+counts_df = pd.concat([train_counts, val_counts])
+
+print("Image counts per class:")
+print(counts_df.pivot(index='Class', columns='Dataset', values='Count').fillna(0))
+
+plt.figure(figsize=(8, 5))
+sns.barplot(data=counts_df, x='Class', y='Count', hue='Dataset')
+plt.title('Number of Images per Class in Train and Validation Sets')
+plt.ylabel('Number of Images')
+plt.xlabel('Class')
+plt.show()
+```
+
+
+
+## Build Model
+I chose to go with MobileNetV2 since it’s a lightweight, efficient CNN pretrained on ImageNet. This makes it ideal for transfer learning on smaller medical image datasets.
+
+- Input Shape (224, 224, 3): This matches MobileNetV2’s expected input dimensions, enabling reuse of its pretrained weights without modification.
+
+- Learning Rate (0.0001): A low learning rate ensures stable fine-tuning and prevents large gradient updates, which is important when using a pretrained base.
+```{python}
+base_model = MobileNetV2(include_top=False, weights="imagenet", input_shape=(224, 224, 3))
+base_model.trainable = False
+
+x = GlobalAveragePooling2D()(base_model.output)
+output = Dense(len(label_map), activation="softmax")(x)
+
+model = Model(inputs=base_model.input, outputs=output)
+model.compile(
+    optimizer=Adam(learning_rate=0.0001),
+    loss="categorical_crossentropy",
+    metrics=["accuracy", Precision(name="precision"), Recall(name="recall")]
+)
+```
+
+
+## Train Model
+- Epochs (5): A small number of epochs was chosen to avoid overfitting and speed up training during initial experiments, especially since the base model is frozen.
+```{python, warning = FALSE, output = FALSE}
+history = model.fit(
+    train_gen,
+    validation_data=val_gen,
+    epochs=5
+)
+
+model.save("models/mobilenetv2_model.h5")
+```
+
+## Visualize Model Architecture
+This is the MobileNetV2 architecture!
+```{python}
+img = visualkeras.layered_view(model, legend=True)
+plt.figure(figsize=(20, 8))
+plt.imshow(img)
+plt.axis('off')
+plt.show()
+```
+
+## Plot Training Accuracy Over Epochs
+```{python}
+tr_acc = history.history['accuracy']
+tr_loss = history.history['loss']
+tr_per = history.history['precision']
+tr_recall = history.history['recall']
+val_acc = history.history['val_accuracy']
+val_loss = history.history['val_loss']
+val_per = history.history['val_precision']
+val_recall = history.history['val_recall']
+
+index_loss = np.argmin(val_loss)
+val_lowest = val_loss[index_loss]
+index_acc = np.argmax(val_acc)
+acc_highest = val_acc[index_acc]
+index_precision = np.argmax(val_per)
+per_highest = val_per[index_precision]
+index_recall = np.argmax(val_recall)
+recall_highest = val_recall[index_recall]
+
+Epochs = [i + 1 for i in range(len(tr_acc))]
+loss_label = f'Best epoch = {str(index_loss + 1)}'
+acc_label = f'Best epoch = {str(index_acc + 1)}'
+per_label = f'Best epoch = {str(index_precision + 1)}'
+recall_label = f'Best epoch = {str(index_recall + 1)}'
+
+plt.figure(figsize=(20, 6))
+plt.style.use('fivethirtyeight')
+
+plt.subplot(1, 2, 1)
+plt.plot(Epochs, tr_loss, 'r', label='Training loss')
+plt.plot(Epochs, val_loss, 'g', label='Validation loss')
+plt.scatter(index_loss + 1, val_lowest, s=150, c='blue', label=loss_label)
+plt.title('Training and Validation Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(1, 2, 2)
+plt.plot(Epochs, tr_acc, 'r', label='Training Accuracy')
+plt.plot(Epochs, val_acc, 'g', label='Validation Accuracy')
+plt.scatter(index_acc + 1, acc_highest, s=150, c='blue', label=acc_label)
+plt.title('Training and Validation Accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.grid(True)
+
+plt.suptitle('Model Training Metrics - Loss and Accuracy', fontsize=16)
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+plt.show()
+```
+
+- Loss consistently decreases over the 5 epochs for both training and validation.the model is learning effectively and not overfitting in the short term.
+
+- Validation accuracy lags slightly behind training accuracy but follows a similar trend, with the best performance reached at epoch 5.
+
+```{python}
+plt.figure(figsize=(20, 6))
+
+plt.subplot(1, 2, 1)
+plt.plot(Epochs, tr_per, 'r', label='Precision')
+plt.plot(Epochs, val_per, 'g', label='Validation Precision')
+plt.scatter(index_precision + 1, per_highest, s=150, c='blue', label=per_label)
+plt.title('Precision and Validation Precision')
+plt.xlabel('Epochs')
+plt.ylabel('Precision')
+plt.legend()
+plt.grid(True)
+
+plt.subplot(1, 2, 2)
+plt.plot(Epochs, tr_recall, 'r', label='Recall')
+plt.plot(Epochs, val_recall, 'g', label='Validation Recall')
+plt.scatter(index_recall + 1, recall_highest, s=150, c='blue', label=recall_label)
+plt.title('Recall and Validation Recall')
+plt.xlabel('Epochs')
+plt.ylabel('Recall')
+plt.legend()
+plt.grid(True)
+
+plt.suptitle('Model Training Metrics - Precision and Recall', fontsize=16)
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+plt.show()
+```
+- Precision steadily improves for both training and validation, with training precision slightly higher than validation, so the model generalizes well but still performs better on the training data.
+
+- Recall also increases consistently, with validation recall slightly higher than training recall in early epochs. This suggests the model became more sensitive to true positives over time, and maintained good generalization.
+
+- Epoch 5 is marked as the best based on all metrics. More epochs could potentially further improve performance, but my Mac is quite slow already.
+
+## Evaluate Model with Classification Report and Confusion Matrix
+```{python}
+from sklearn.metrics import classification_report, confusion_matrix
+
+y_true = val_gen.classes
+y_pred = model.predict(val_gen)
+y_pred_classes = np.argmax(y_pred, axis=1)
+
+print(classification_report(y_true, y_pred_classes, target_names=label_map.keys()))
+```
+
+
+```{python}
+cm = confusion_matrix(y_true, y_pred_classes)
+sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=label_map.keys(), yticklabels=label_map.keys())
+plt.xlabel("Predicted")
+plt.ylabel("True")
+plt.title("Confusion Matrix")
+plt.show()
+
+```
+- Best performance was on "notumor" and "pituitary" classes, with F1-scores of 0.91 and 0.88 respectively.
+
+- "Meningioma" was the most challenging class, with the lowest recall (0.61), so many meningioma images were misclassified.
+
+- Overall model accuracy is 83%, with balanced precision and recall across most classes. It showed generally strong performance but room for improvement in class-specific sensitivity.
+
+## Grad-CAM
+This function generates Grad-CAM heatmaps for several images in a batch, showing where the model is focusing when making predictions. It displays both the true and predicted class for each image, helping interpret model behavior visually.
+
+In Grad-CAM:
+    - Brighter (hotter) colors = more important
+    - Darker (cooler) colors = less important
+```{python}
+import cv2
+
+def make_gradcam_heatmap(img_array, model, last_conv_layer_name, pred_index=None):
+    grad_model = tf.keras.models.Model(
+        inputs=model.input,
+        outputs=[model.get_layer(last_conv_layer_name).output, model.output]
+    )
+
+    with tf.GradientTape() as tape:
+        conv_outputs, predictions = grad_model(img_array)
+        if pred_index is None:
+            pred_index = tf.argmax(predictions[0])
+        class_channel = predictions[:, pred_index]
+
+    grads = tape.gradient(class_channel, conv_outputs)
+    pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
+
+    conv_outputs = conv_outputs[0]
+    heatmap = conv_outputs @ pooled_grads[..., tf.newaxis]
+    heatmap = tf.squeeze(heatmap)
+
+    heatmap = np.maximum(heatmap, 0) / tf.math.reduce_max(heatmap)
+    return heatmap.numpy()
+
+def display_gradcam(img, heatmap, alpha=0.4):
+    # Resize heatmap to match image size
+    heatmap = cv2.resize(heatmap, (img.shape[1], img.shape[0]))
+    heatmap = np.uint8(255 * heatmap)
+
+    # Apply colormap (you can change COLORMAP_JET to any OpenCV colormap)
+    heatmap_color = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
+
+    # Convert image to BGR for OpenCV overlay
+    img_bgr = np.uint8(255 * img)
+    if img_bgr.shape[-1] == 1:
+        img_bgr = cv2.cvtColor(img_bgr, cv2.COLOR_GRAY2BGR)
+
+    # Overlay heatmap on image
+    overlayed_img = cv2.addWeighted(img_bgr, 1 - alpha, heatmap_color, alpha, 0)
+    
+    # Convert back to RGB for matplotlib
+    overlayed_img = cv2.cvtColor(overlayed_img, cv2.COLOR_BGR2RGB)
+
+    # Show
+    plt.figure(figsize=(6, 6))
+    plt.imshow(overlayed_img)
+    plt.axis("off")
+    plt.title("Grad-CAM Overlay")
+    plt.show()
+
+
+def gradcam_on_batch(generator, model, last_conv_layer_name="Conv_1", num_images=5):
+    images, labels = next(generator)
+    class_names = list(generator.class_indices.keys())
+
+    displayed = 0
+    for i in range(len(images)):
+        if displayed >= num_images:
+            break
+
+        img = images[i]
+        label_idx = np.argmax(labels[i])
+        true_label = class_names[label_idx]
+
+        img_exp = np.expand_dims(img, axis=0)
+        preds = model.predict(img_exp)
+        pred_idx = np.argmax(preds[0])
+        pred_label = class_names[pred_idx]
+
+        if pred_label == true_label:
+            heatmap = make_gradcam_heatmap(img_exp, model, last_conv_layer_name)
+            print(f"Image {i+1}: True = {true_label}, Predicted = {pred_label} (Correct)")
+            display_gradcam(img, heatmap)
+            displayed += 1
+
+gradcam_on_batch(val_gen, model, last_conv_layer_name="Conv_1", num_images=3)
+```
+
+
+
+Why the area differs in each image:
+    - Model focuses on features it finds most discriminative, which vary by image.
+    - Differences in predictions, confidence, or tumor appearance shift attention.
+    - Grad-CAM uses low-res feature maps, making heatmaps coarse and inconsistent.
+    
+## Conclusions
+The MobileNetV2-based model achieved an overall classification accuracy of approximately 83% on the validation set. It demonstrated promising performance for this multi-class brain tumor classification task with limited computing power. The model showed strong precision and recall for "no tumor" and "pituitary tumor" classes. However, the "meningioma" class proved more challenging, with the lowest recall score, suggesting room for improvement in identifying this tumor type.
+
+Visualization tools such as Grad-CAM provided useful interpretability, highlighting the regions of MRI scans the model focuses on during classification. This aligns with the goal of developing more transparent and explainable AI models in medical imaging.
+
+Overall, the project validated the feasibility of transfer learning for brain tumor classification and highlighted the importance of dataset balancing, preprocessing, and careful evaluation in medical image analysis. It was a great learning project
+
