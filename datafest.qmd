@@ -9,6 +9,8 @@ listing:
   filter-ui: false
 page-layout: full
 title-block-banner: false
+execute:
+  cache: false
 ---
 
 DataFest is a competition of data in which teams of undergraduates work "around the clock" to discover and share meaning in a large, rich, and complex data set. It is a nationally coordinated weekend-long data analysis competition and challenges students to find their own story to tell with the data that is meaningful to the data donor.
