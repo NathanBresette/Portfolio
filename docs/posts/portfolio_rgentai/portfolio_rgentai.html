@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Nathan Bresette">
+<meta name="dcterms.date" content="2025-09-01">
+
+<title>RgentAI: AI-Powered R Data Science Assistant – Nathan Bresette</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-c669134cb6dce3d72c3b40a8cf70a3cf.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Nathan Bresette</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../aboutme_index.html"> 
+<span class="menu-text">About Me</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../projects.html"> 
+<span class="menu-text">Projects</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../consulting.html"> 
+<span class="menu-text">Consulting</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../datafest.html"> 
+<span class="menu-text">DataFest</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../Resume.html"> 
+<span class="menu-text">Resume</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#project-overview" id="toc-project-overview" class="nav-link active" data-scroll-target="#project-overview">Project Overview</a>
+  <ul class="collapse">
+  <li><a href="#key-features" id="toc-key-features" class="nav-link" data-scroll-target="#key-features">Key Features</a></li>
+  </ul></li>
+  <li><a href="#architecture" id="toc-architecture" class="nav-link" data-scroll-target="#architecture">Architecture</a>
+  <ul class="collapse">
+  <li><a href="#system-components" id="toc-system-components" class="nav-link" data-scroll-target="#system-components">System Components</a></li>
+  </ul></li>
+  <li><a href="#backend" id="toc-backend" class="nav-link" data-scroll-target="#backend">Backend</a>
+  <ul class="collapse">
+  <li><a href="#fastapi-server-backendmain.py" id="toc-fastapi-server-backendmain.py" class="nav-link" data-scroll-target="#fastapi-server-backendmain.py">FastAPI Server (<code>backend/main.py</code>)</a>
+  <ul class="collapse">
+  <li><a href="#core-endpoints" id="toc-core-endpoints" class="nav-link" data-scroll-target="#core-endpoints">Core Endpoints</a></li>
+  <li><a href="#key-features-1" id="toc-key-features-1" class="nav-link" data-scroll-target="#key-features-1">Key Features</a></li>
+  <li><a href="#smart-response-caching" id="toc-smart-response-caching" class="nav-link" data-scroll-target="#smart-response-caching">Smart Response Caching</a></li>
+  </ul></li>
+  <li><a href="#database-schema-backenduser_management_postgres.py" id="toc-database-schema-backenduser_management_postgres.py" class="nav-link" data-scroll-target="#database-schema-backenduser_management_postgres.py">Database Schema (<code>backend/user_management_postgres.py</code>)</a>
+  <ul class="collapse">
+  <li><a href="#core-tables" id="toc-core-tables" class="nav-link" data-scroll-target="#core-tables">Core Tables</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#frontend" id="toc-frontend" class="nav-link" data-scroll-target="#frontend">Frontend</a>
+  <ul class="collapse">
+  <li><a href="#rstudio-addin-clean_packagerwebsocket_addin.r" id="toc-rstudio-addin-clean_packagerwebsocket_addin.r" class="nav-link" data-scroll-target="#rstudio-addin-clean_packagerwebsocket_addin.r">RStudio Addin (<code>clean_package/R/websocket_addin.R</code>)</a>
+  <ul class="collapse">
+  <li><a href="#websocket-integration" id="toc-websocket-integration" class="nav-link" data-scroll-target="#websocket-integration">WebSocket Integration</a></li>
+  <li><a href="#context-capture" id="toc-context-capture" class="nav-link" data-scroll-target="#context-capture">Context Capture</a></li>
+  </ul></li>
+  <li><a href="#react-web-interface-payment-frontend" id="toc-react-web-interface-payment-frontend" class="nav-link" data-scroll-target="#react-web-interface-payment-frontend">React Web Interface (<code>payment-frontend/</code>)</a>
+  <ul class="collapse">
+  <li><a href="#key-components" id="toc-key-components" class="nav-link" data-scroll-target="#key-components">Key Components</a></li>
+  <li><a href="#installation-page" id="toc-installation-page" class="nav-link" data-scroll-target="#installation-page">Installation Page</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#websocket-communication" id="toc-websocket-communication" class="nav-link" data-scroll-target="#websocket-communication">WebSocket Communication</a>
+  <ul class="collapse">
+  <li><a href="#real-time-data-flow" id="toc-real-time-data-flow" class="nav-link" data-scroll-target="#real-time-data-flow">Real-time Data Flow</a></li>
+  <li><a href="#message-types" id="toc-message-types" class="nav-link" data-scroll-target="#message-types">Message Types</a></li>
+  </ul></li>
+  <li><a href="#specialized-agents" id="toc-specialized-agents" class="nav-link" data-scroll-target="#specialized-agents">Specialized Agents</a>
+  <ul class="collapse">
+  <li><a href="#statistical-analysis-agent-clean_packagerstatistical_agent.r" id="toc-statistical-analysis-agent-clean_packagerstatistical_agent.r" class="nav-link" data-scroll-target="#statistical-analysis-agent-clean_packagerstatistical_agent.r">1. Statistical Analysis Agent (<code>clean_package/R/statistical_agent.R</code>)</a></li>
+  <li><a href="#machine-learning-agent-clean_packagermodeling_agent.r" id="toc-machine-learning-agent-clean_packagermodeling_agent.r" class="nav-link" data-scroll-target="#machine-learning-agent-clean_packagermodeling_agent.r">2. Machine Learning Agent (<code>clean_package/R/modeling_agent.R</code>)</a></li>
+  <li><a href="#data-transformation-agent-clean_packagertransformation_agent.r" id="toc-data-transformation-agent-clean_packagertransformation_agent.r" class="nav-link" data-scroll-target="#data-transformation-agent-clean_packagertransformation_agent.r">3. Data Transformation Agent (<code>clean_package/R/transformation_agent.R</code>)</a></li>
+  <li><a href="#data-cleaning-agent-clean_packageragent.r" id="toc-data-cleaning-agent-clean_packageragent.r" class="nav-link" data-scroll-target="#data-cleaning-agent-clean_packageragent.r">4. Data Cleaning Agent (<code>clean_package/R/agent.R</code>)</a></li>
+  <li><a href="#visualization-agent" id="toc-visualization-agent" class="nav-link" data-scroll-target="#visualization-agent">5. Visualization Agent</a></li>
+  </ul></li>
+  <li><a href="#context-indexing-memory" id="toc-context-indexing-memory" class="nav-link" data-scroll-target="#context-indexing-memory">Context Indexing &amp; Memory</a>
+  <ul class="collapse">
+  <li><a href="#intelligent-context-capture-backendcontext_summarizer.py" id="toc-intelligent-context-capture-backendcontext_summarizer.py" class="nav-link" data-scroll-target="#intelligent-context-capture-backendcontext_summarizer.py">Intelligent Context Capture (<code>backend/context_summarizer.py</code>)</a></li>
+  <li><a href="#conversation-memory" id="toc-conversation-memory" class="nav-link" data-scroll-target="#conversation-memory">Conversation Memory</a></li>
+  </ul></li>
+  <li><a href="#security-production" id="toc-security-production" class="nav-link" data-scroll-target="#security-production">Security &amp; Production</a>
+  <ul class="collapse">
+  <li><a href="#security-features" id="toc-security-features" class="nav-link" data-scroll-target="#security-features">Security Features</a></li>
+  <li><a href="#user-management" id="toc-user-management" class="nav-link" data-scroll-target="#user-management">User Management</a></li>
+  <li><a href="#cloud-infrastructure" id="toc-cloud-infrastructure" class="nav-link" data-scroll-target="#cloud-infrastructure">Cloud Infrastructure</a></li>
+  </ul></li>
+  <li><a href="#performance-optimizations" id="toc-performance-optimizations" class="nav-link" data-scroll-target="#performance-optimizations">Performance Optimizations</a>
+  <ul class="collapse">
+  <li><a href="#response-caching" id="toc-response-caching" class="nav-link" data-scroll-target="#response-caching">Response Caching</a></li>
+  <li><a href="#memory-management" id="toc-memory-management" class="nav-link" data-scroll-target="#memory-management">Memory Management</a></li>
+  </ul></li>
+  <li><a href="#installation-usage" id="toc-installation-usage" class="nav-link" data-scroll-target="#installation-usage">Installation &amp; Usage</a>
+  <ul class="collapse">
+  <li><a href="#quick-start" id="toc-quick-start" class="nav-link" data-scroll-target="#quick-start">Quick Start</a></li>
+  <li><a href="#web-interface" id="toc-web-interface" class="nav-link" data-scroll-target="#web-interface">Web Interface</a></li>
+  </ul></li>
+  <li><a href="#future-enhancements" id="toc-future-enhancements" class="nav-link" data-scroll-target="#future-enhancements">Future Enhancements</a>
+  <ul class="collapse">
+  <li><a href="#planned-features" id="toc-planned-features" class="nav-link" data-scroll-target="#planned-features">Planned Features</a></li>
+  <li><a href="#technical-roadmap" id="toc-technical-roadmap" class="nav-link" data-scroll-target="#technical-roadmap">Technical Roadmap</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">RgentAI: AI-Powered R Data Science Assistant</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">R Programming</div>
+    <div class="quarto-category">AI/ML</div>
+    <div class="quarto-category">Web Development</div>
+    <div class="quarto-category">Data Science</div>
+    <div class="quarto-category">Full-Stack</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Nathan Bresette </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 1, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>RgentAI is an intelligent AI assistant for RStudio that provides conversational chat, plot analysis, error debugging, and specialized agents.</p>
+<p><a href="https://rgentai.com">Official Website</a></p>
+<p><a href="https://github.com/NathanBresette/Rgent-AI">GitHub Repository</a></p>
+<section id="project-overview" class="level1">
+<h1>Project Overview</h1>
+<p>RgentAI bridges the gap between general-purpose AI tools and specialized R data science workflows by providing deep integration with RStudio, real-time context capture, and purpose-built agents for common data science tasks. Unlike CLI-based AI tools, RgentAI can analyze your actual plots, inspect your live R environment, and execute code directly in your R console.</p>
+<section id="key-features" class="level2">
+<h2 class="anchored" data-anchor-id="key-features">Key Features</h2>
+<ul>
+<li><strong>5 Specialized Data Science Agents</strong>: Statistical analysis, machine learning modeling, data transformation, data cleaning, and visualization</li>
+<li><strong>Real-time Plot Analysis</strong>: Automatically captures and analyzes plots from RStudio viewer pane</li>
+<li><strong>Environment Awareness</strong>: Inspects live R environment including dataframes, variables, and objects</li>
+<li><strong>Direct Code Execution</strong>: Executes generated R code directly in RStudio console</li>
+<li><strong>Conversation Memory</strong>: Maintains context across sessions with intelligent indexing</li>
+<li><strong>Production-Ready</strong>: User management, billing, security, and cloud infrastructure</li>
+</ul>
+</section>
+</section>
+<section id="architecture" class="level1">
+<h1>Architecture</h1>
+<section id="system-components" class="level2">
+<h2 class="anchored" data-anchor-id="system-components">System Components</h2>
+<pre class="mermaid"><code>graph TB
+    A[RStudio Addin] --&gt; B[WebSocket Client]
+    B --&gt; C[Python FastAPI Backend]
+    C --&gt; D[PostgreSQL Database]
+    C --&gt; E[Claude AI API]
+    C --&gt; F[Response Cache]
+    G[React Frontend] --&gt; C
+    H[Stripe Billing] --&gt; C</code></pre>
+</section>
+</section>
+<section id="backend" class="level1">
+<h1>Backend</h1>
+<section id="fastapi-server-backendmain.py" class="level2">
+<h2 class="anchored" data-anchor-id="fastapi-server-backendmain.py">FastAPI Server (<code>backend/main.py</code>)</h2>
+<p>The backend is built with Python FastAPI and handles all core functionality:</p>
+<section id="core-endpoints" class="level3">
+<h3 class="anchored" data-anchor-id="core-endpoints">Core Endpoints</h3>
+<ul>
+<li><strong><code>/chat</code></strong> - Main chat endpoint with conversation memory</li>
+<li><strong><code>/chat/stream</code></strong> - Real-time streaming responses</li>
+<li><strong><code>/context/capture</code></strong> - R environment context capture</li>
+<li><strong><code>/plot/analyze</code></strong> - Plot analysis and interpretation</li>
+<li><strong><code>/agent/execute</code></strong> - Specialized agent execution</li>
+</ul>
+</section>
+<section id="key-features-1" class="level3">
+<h3 class="anchored" data-anchor-id="key-features-1">Key Features</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Conversation memory with PostgreSQL indexing</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="at">@app.post</span>(<span class="st">"/chat"</span>, response_model<span class="op">=</span>ChatResponse)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> chat_with_ai(request: ChatRequest):</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    conversation_id <span class="op">=</span> request.conversation_id</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> request.new_conversation <span class="kw">or</span> <span class="kw">not</span> conversation_id:</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        conversation_id <span class="op">=</span> user_manager.start_conversation(request.access_code)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Enhanced prompt with context</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    enhanced_prompt <span class="op">=</span> build_enhanced_prompt(</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>        request.prompt, </span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>        request.context_data, </span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>        conversation_history</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="smart-response-caching" class="level3">
+<h3 class="anchored" data-anchor-id="smart-response-caching">Smart Response Caching</h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> SmartResponseCache:</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, max_cache_size: <span class="bu">int</span> <span class="op">=</span> <span class="dv">500</span>, cache_ttl_hours: <span class="bu">int</span> <span class="op">=</span> <span class="dv">6</span>):</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.cache <span class="op">=</span> {}</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.context_summarizer <span class="op">=</span> ContextSummarizer()</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> is_cacheable_question(<span class="va">self</span>, prompt: <span class="bu">str</span>) <span class="op">-&gt;</span> <span class="bu">bool</span>:</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Intelligent caching based on question type</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        cacheable_patterns <span class="op">=</span> [</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>            <span class="vs">r"how</span><span class="dv">\s</span><span class="op">+</span><span class="vs">to</span><span class="dv">\s</span><span class="op">+</span><span class="vs">"</span>, <span class="vs">r"what</span><span class="dv">\s</span><span class="op">+</span><span class="vs">is</span><span class="dv">\s</span><span class="op">+</span><span class="vs">"</span>, <span class="vs">r"explain</span><span class="dv">\s</span><span class="op">+</span><span class="vs">"</span>,</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>            <span class="vs">r"create</span><span class="dv">\s</span><span class="op">+</span><span class="vs">a</span><span class="dv">\s</span><span class="op">+</span><span class="vs">"</span>, <span class="vs">r"plot</span><span class="dv">\s</span><span class="op">+</span><span class="vs">"</span>, <span class="vs">r"visualize</span><span class="dv">\s</span><span class="op">+</span><span class="vs">"</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="database-schema-backenduser_management_postgres.py" class="level2">
+<h2 class="anchored" data-anchor-id="database-schema-backenduser_management_postgres.py">Database Schema (<code>backend/user_management_postgres.py</code>)</h2>
+<section id="core-tables" class="level3">
+<h3 class="anchored" data-anchor-id="core-tables">Core Tables</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Users and authentication</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> users (</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">id</span> SERIAL <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    access_code <span class="dt">VARCHAR</span>(<span class="dv">50</span>) <span class="kw">UNIQUE</span> <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    stripe_customer_id <span class="dt">VARCHAR</span>(<span class="dv">100</span>),</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    subscription_status <span class="dt">VARCHAR</span>(<span class="dv">50</span>) <span class="kw">DEFAULT</span> <span class="st">'inactive'</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    daily_limit <span class="dt">INTEGER</span> <span class="kw">DEFAULT</span> <span class="dv">1000</span>,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    monthly_budget <span class="dt">DECIMAL</span>(<span class="dv">10</span>,<span class="dv">2</span>) <span class="kw">DEFAULT</span> <span class="fl">50.0</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co">-- Conversation memory</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> contexts (</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">id</span> SERIAL <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    access_code <span class="dt">VARCHAR</span>(<span class="dv">50</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    session_id <span class="dt">VARCHAR</span>(<span class="dv">64</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    context_data JSONB,</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    created_at <span class="dt">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fu">CURRENT_TIMESTAMP</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co">-- Usage tracking</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="kw">CREATE</span> <span class="kw">TABLE</span> usage_records (</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">id</span> SERIAL <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    access_code <span class="dt">VARCHAR</span>(<span class="dv">50</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    request_type <span class="dt">VARCHAR</span>(<span class="dv">50</span>),</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    tokens_used <span class="dt">INTEGER</span>,</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">cost</span> <span class="dt">DECIMAL</span>(<span class="dv">10</span>,<span class="dv">4</span>),</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    <span class="dt">timestamp</span> <span class="dt">TIMESTAMP</span> <span class="kw">DEFAULT</span> <span class="fu">CURRENT_TIMESTAMP</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+</section>
+<section id="frontend" class="level1">
+<h1>Frontend</h1>
+<section id="rstudio-addin-clean_packagerwebsocket_addin.r" class="level2">
+<h2 class="anchored" data-anchor-id="rstudio-addin-clean_packagerwebsocket_addin.r">RStudio Addin (<code>clean_package/R/websocket_addin.R</code>)</h2>
+<p>The R package provides seamless integration with RStudio:</p>
+<section id="websocket-integration" class="level3">
+<h3 class="anchored" data-anchor-id="websocket-integration">WebSocket Integration</h3>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Real-time communication with backend</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>ws <span class="ot">&lt;-</span> websocket<span class="sc">::</span>WebSocket<span class="sc">$</span><span class="fu">new</span>(<span class="st">"wss://rgent.onrender.com/ws"</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>ws<span class="sc">$</span><span class="fu">onMessage</span>(<span class="cf">function</span>(event) {</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  response <span class="ot">&lt;-</span> jsonlite<span class="sc">::</span><span class="fu">fromJSON</span>(event<span class="sc">$</span>data)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (response<span class="sc">$</span>type <span class="sc">==</span> <span class="st">"code"</span>) {</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    rstudioapi<span class="sc">::</span><span class="fu">sendToConsole</span>(response<span class="sc">$</span>content)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="context-capture" class="level3">
+<h3 class="anchored" data-anchor-id="context-capture">Context Capture</h3>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Automatic environment capture</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>capture_context <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">dataframes =</span> <span class="fu">get_available_dataframes</span>(),</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">plots =</span> <span class="fu">get_active_plots</span>(),</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">variables =</span> <span class="fu">ls</span>(<span class="fu">globalenv</span>()),</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">working_directory =</span> <span class="fu">getwd</span>(),</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">loaded_packages =</span> <span class="fu">.packages</span>()</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="react-web-interface-payment-frontend" class="level2">
+<h2 class="anchored" data-anchor-id="react-web-interface-payment-frontend">React Web Interface (<code>payment-frontend/</code>)</h2>
+<section id="key-components" class="level3">
+<h3 class="anchored" data-anchor-id="key-components">Key Components</h3>
+<ul>
+<li><strong>Chat Interface</strong> - Real-time messaging with streaming responses</li>
+<li><strong>Agent Selection</strong> - Choose from 5 specialized data science agents</li>
+<li><strong>Plot Viewer</strong> - Display and analyze R plots</li>
+<li><strong>Code Execution</strong> - Send code directly to RStudio</li>
+<li><strong>User Dashboard</strong> - Usage tracking and subscription management</li>
+</ul>
+</section>
+<section id="installation-page" class="level3">
+<h3 class="anchored" data-anchor-id="installation-page">Installation Page</h3>
+<div class="sourceCode" id="cb7"><pre class="sourceCode html code-with-copy"><code class="sourceCode html"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- Streamlined installation process --&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">div</span><span class="ot"> class</span><span class="op">=</span><span class="st">"code-block"</span><span class="dt">&gt;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">code</span><span class="dt">&gt;</span>devtools::install_github("NathanBresette/Rgent-AI", force = TRUE, upgrade = "never")<span class="dt">&lt;/</span><span class="kw">code</span><span class="dt">&gt;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">div</span><span class="dt">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+</section>
+<section id="websocket-communication" class="level1">
+<h1>WebSocket Communication</h1>
+<section id="real-time-data-flow" class="level2">
+<h2 class="anchored" data-anchor-id="real-time-data-flow">Real-time Data Flow</h2>
+<pre class="mermaid"><code>sequenceDiagram
+    participant R as RStudio Addin
+    participant WS as WebSocket
+    participant B as Backend
+    participant AI as Claude API
+    
+    R-&gt;&gt;WS: Send chat message + context
+    WS-&gt;&gt;B: Process request
+    B-&gt;&gt;AI: Enhanced prompt with context
+    AI--&gt;&gt;B: Streaming response
+    B--&gt;&gt;WS: Stream chunks
+    WS--&gt;&gt;R: Real-time updates
+    R-&gt;&gt;R: Execute generated code</code></pre>
+</section>
+<section id="message-types" class="level2">
+<h2 class="anchored" data-anchor-id="message-types">Message Types</h2>
+<ul>
+<li><strong><code>chat</code></strong> - Standard chat messages</li>
+<li><strong><code>context</code></strong> - R environment data</li>
+<li><strong><code>plot</code></strong> - Plot analysis requests</li>
+<li><strong><code>agent</code></strong> - Specialized agent execution</li>
+<li><strong><code>code</code></strong> - R code execution</li>
+</ul>
+</section>
+</section>
+<section id="specialized-agents" class="level1">
+<h1>Specialized Agents</h1>
+<section id="statistical-analysis-agent-clean_packagerstatistical_agent.r" class="level2">
+<h2 class="anchored" data-anchor-id="statistical-analysis-agent-clean_packagerstatistical_agent.r">1. Statistical Analysis Agent (<code>clean_package/R/statistical_agent.R</code>)</h2>
+<p>Comprehensive statistical testing with intelligent test selection:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>start_statistical_analysis <span class="ot">&lt;-</span> <span class="cf">function</span>(dataframe_name, analysis_options, variables, method_options) {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Automatic test selection based on data characteristics</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (group_count <span class="sc">==</span> <span class="dv">2</span>) {</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    test_result <span class="ot">&lt;-</span> <span class="fu">perform_two_group_test</span>(df, continuous_var, grouping_var)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    test_result <span class="ot">&lt;-</span> <span class="fu">perform_anova_test</span>(df, continuous_var, grouping_var)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Effect size calculation</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  effect_size <span class="ot">&lt;-</span> <span class="fu">calculate_cohens_d</span>(group1_data, group2_data)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Capabilities:</strong> - T-tests, ANOVA, Chi-squared tests - Effect size calculations (Cohen’s d, eta-squared) - Power analysis and sample size calculations - Multiple testing corrections - Assumption checking and non-parametric alternatives</p>
+</section>
+<section id="machine-learning-agent-clean_packagermodeling_agent.r" class="level2">
+<h2 class="anchored" data-anchor-id="machine-learning-agent-clean_packagermodeling_agent.r">2. Machine Learning Agent (<code>clean_package/R/modeling_agent.R</code>)</h2>
+<p>Comprehensive ML workflows with model interpretability:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>execute_linear_regression <span class="ot">&lt;-</span> <span class="cf">function</span>(df, target_variable, options, selected_variables) {</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Feature importance calculation</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  feature_importance <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">feature =</span> <span class="fu">names</span>(coefficients),</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">coefficient =</span> coefficients,</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">abs_coefficient =</span> <span class="fu">abs</span>(coefficients)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Residuals analysis</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  residuals_analysis <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_residual =</span> <span class="fu">mean</span>(<span class="fu">resid</span>(model)),</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">normality_test =</span> <span class="fu">shapiro.test</span>(<span class="fu">resid</span>(model))<span class="sc">$</span>p.value</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Supported Algorithms:</strong> - Linear/Logistic/Multinomial Regression - Random Forest with feature importance - XGBoost with interpretability - Dimensionality reduction (PCA, t-SNE, UMAP) - Feature engineering and selection</p>
+</section>
+<section id="data-transformation-agent-clean_packagertransformation_agent.r" class="level2">
+<h2 class="anchored" data-anchor-id="data-transformation-agent-clean_packagertransformation_agent.r">3. Data Transformation Agent (<code>clean_package/R/transformation_agent.R</code>)</h2>
+<p>Intelligent data preprocessing and transformation:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>generate_transformation_step_code <span class="ot">&lt;-</span> <span class="cf">function</span>(step_info, dataframe, method_options) {</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">switch</span>(step_info<span class="sc">$</span>operation,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mathematical_transformations"</span> <span class="ot">=</span> {</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Log, sqrt, power transformations based on skewness</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (<span class="fu">abs</span>(skewness) <span class="sc">&gt;</span> <span class="fl">1.5</span>) {</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">cat</span>(<span class="st">"SUGGESTION: Highly skewed - consider log/sqrt transformation</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    },</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"categorical_transformations"</span> <span class="ot">=</span> {</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Dummy encoding, recoding, combining categories</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Transformation Types:</strong> - Mathematical (log, sqrt, power, polynomial) - Categorical (dummy encoding, recoding, combining) - DateTime (extracting components, time differences) - Statistical (z-score, normalization, ranking) - Text (case changes, pattern extraction) - Spatial (coordinate transformations, distance calculations)</p>
+</section>
+<section id="data-cleaning-agent-clean_packageragent.r" class="level2">
+<h2 class="anchored" data-anchor-id="data-cleaning-agent-clean_packageragent.r">4. Data Cleaning Agent (<code>clean_package/R/agent.R</code>)</h2>
+<p>Automated data quality assessment and cleaning:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>execute_cleaning_agent <span class="ot">&lt;-</span> <span class="cf">function</span>(dataframe, <span class="at">na_handling =</span> <span class="st">"median"</span>, <span class="at">iteration =</span> <span class="dv">1</span>) {</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  cleaning_steps <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">operation =</span> <span class="st">"examine_structure"</span>, <span class="at">code =</span> <span class="fu">paste0</span>(<span class="st">"str("</span>, dataframe, <span class="st">")"</span>)),</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">operation =</span> <span class="st">"analyze_summary"</span>, <span class="at">code =</span> <span class="fu">paste0</span>(<span class="st">"summary("</span>, dataframe, <span class="st">")"</span>)),</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">operation =</span> <span class="st">"handle_nas"</span>, <span class="at">code =</span> <span class="fu">generate_na_handling_code</span>(dataframe, na_handling)),</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">operation =</span> <span class="st">"fix_data_types"</span>, <span class="at">code =</span> <span class="fu">generate_type_conversion_code</span>(dataframe)),</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">operation =</span> <span class="st">"remove_outliers"</span>, <span class="at">code =</span> <span class="fu">generate_outlier_removal_code</span>(dataframe))</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><strong>Cleaning Operations:</strong> - Missing value analysis and imputation - Data type detection and conversion - Outlier detection (IQR, Z-score, Modified Z-score) - Duplicate identification and removal - Column naming standardization - Custom cleaning operations</p>
+</section>
+<section id="visualization-agent" class="level2">
+<h2 class="anchored" data-anchor-id="visualization-agent">5. Visualization Agent</h2>
+<p>Plot analysis and intelligent visualization suggestions:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot analysis capabilities</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>analyze_plot <span class="ot">&lt;-</span> <span class="cf">function</span>(plot_data) {</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Extract plot characteristics</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  plot_type <span class="ot">&lt;-</span> <span class="fu">detect_plot_type</span>(plot_data)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  aesthetics <span class="ot">&lt;-</span> <span class="fu">extract_aesthetics</span>(plot_data)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Provide intelligent suggestions</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>  suggestions <span class="ot">&lt;-</span> <span class="fu">generate_plot_suggestions</span>(plot_type, aesthetics)</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+</section>
+<section id="context-indexing-memory" class="level1">
+<h1>Context Indexing &amp; Memory</h1>
+<section id="intelligent-context-capture-backendcontext_summarizer.py" class="level2">
+<h2 class="anchored" data-anchor-id="intelligent-context-capture-backendcontext_summarizer.py">Intelligent Context Capture (<code>backend/context_summarizer.py</code>)</h2>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ContextSummarizer:</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> summarize_context(<span class="va">self</span>, context_data: <span class="bu">dict</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Extract key information from R environment</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>        dataframes <span class="op">=</span> context_data.get(<span class="st">'dataframes'</span>, [])</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>        plots <span class="op">=</span> context_data.get(<span class="st">'plots'</span>, [])</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>        variables <span class="op">=</span> context_data.get(<span class="st">'variables'</span>, [])</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create concise summary for AI prompt</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>        summary <span class="op">=</span> <span class="ss">f"Dataframes: </span><span class="sc">{</span><span class="st">', '</span><span class="sc">.</span>join(dataframes)<span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>        summary <span class="op">+=</span> <span class="ss">f"Active plots: </span><span class="sc">{</span><span class="bu">len</span>(plots)<span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>        summary <span class="op">+=</span> <span class="ss">f"Variables: </span><span class="sc">{</span><span class="bu">len</span>(variables)<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> summary</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="conversation-memory" class="level2">
+<h2 class="anchored" data-anchor-id="conversation-memory">Conversation Memory</h2>
+<ul>
+<li><strong>PostgreSQL indexing</strong> for fast context retrieval</li>
+<li><strong>Similarity matching</strong> for relevant conversation history</li>
+<li><strong>Context summarization</strong> to maintain prompt efficiency</li>
+<li><strong>Session management</strong> with automatic cleanup</li>
+</ul>
+</section>
+</section>
+<section id="security-production" class="level1">
+<h1>Security &amp; Production</h1>
+<section id="security-features" class="level2">
+<h2 class="anchored" data-anchor-id="security-features">Security Features</h2>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Content Security Policy</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>csp_policy <span class="op">=</span> (</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"default-src 'self'; "</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"script-src 'self' 'unsafe-inline' https://js.stripe.com; "</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"connect-src 'self' https://api.stripe.com https://rgent.onrender.com; "</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"upgrade-insecure-requests;"</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="user-management" class="level2">
+<h2 class="anchored" data-anchor-id="user-management">User Management</h2>
+<ul>
+<li><strong>Access code authentication</strong> (16-character alphanumeric)</li>
+<li><strong>Usage tracking</strong> with daily/monthly limits</li>
+<li><strong>Subscription tiers</strong> (Free Trial, Pro Haiku, Pro Sonnet)</li>
+<li><strong>Rate limiting</strong> and cost controls</li>
+<li><strong>Stripe integration</strong> for billing</li>
+</ul>
+</section>
+<section id="cloud-infrastructure" class="level2">
+<h2 class="anchored" data-anchor-id="cloud-infrastructure">Cloud Infrastructure</h2>
+<ul>
+<li><strong>Render.com deployment</strong> with auto-scaling</li>
+<li><strong>PostgreSQL database</strong> with connection pooling</li>
+<li><strong>HTTPS with Let’s Encrypt</strong> certificates</li>
+<li><strong>CDN integration</strong> for static assets</li>
+<li><strong>Monitoring and logging</strong> with error tracking</li>
+</ul>
+</section>
+</section>
+<section id="performance-optimizations" class="level1">
+<h1>Performance Optimizations</h1>
+<section id="response-caching" class="level2">
+<h2 class="anchored" data-anchor-id="response-caching">Response Caching</h2>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Smart caching based on question type</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> is_cacheable_question(<span class="va">self</span>, prompt: <span class="bu">str</span>) <span class="op">-&gt;</span> <span class="bu">bool</span>:</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    cacheable_patterns <span class="op">=</span> [</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>        <span class="vs">r"how</span><span class="dv">\s</span><span class="op">+</span><span class="vs">to</span><span class="dv">\s</span><span class="op">+</span><span class="vs">"</span>, <span class="vs">r"what</span><span class="dv">\s</span><span class="op">+</span><span class="vs">is</span><span class="dv">\s</span><span class="op">+</span><span class="vs">"</span>, <span class="vs">r"explain</span><span class="dv">\s</span><span class="op">+</span><span class="vs">"</span>,</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>        <span class="vs">r"create</span><span class="dv">\s</span><span class="op">+</span><span class="vs">a</span><span class="dv">\s</span><span class="op">+</span><span class="vs">"</span>, <span class="vs">r"plot</span><span class="dv">\s</span><span class="op">+</span><span class="vs">"</span>, <span class="vs">r"visualize</span><span class="dv">\s</span><span class="op">+</span><span class="vs">"</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">any</span>(re.search(pattern, prompt.lower()) <span class="cf">for</span> pattern <span class="kw">in</span> cacheable_patterns)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="memory-management" class="level2">
+<h2 class="anchored" data-anchor-id="memory-management">Memory Management</h2>
+<ul>
+<li><strong>Streaming responses</strong> to reduce memory usage</li>
+<li><strong>Context summarization</strong> to limit prompt size</li>
+<li><strong>Automatic cleanup</strong> of old conversations</li>
+<li><strong>Efficient database queries</strong> with proper indexing</li>
+</ul>
+</section>
+</section>
+<section id="installation-usage" class="level1">
+<h1>Installation &amp; Usage</h1>
+<section id="quick-start" class="level2">
+<h2 class="anchored" data-anchor-id="quick-start">Quick Start</h2>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install from GitHub</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"NathanBresette/Rgent-AI"</span>, <span class="at">force =</span> <span class="cn">TRUE</span>, <span class="at">upgrade =</span> <span class="st">"never"</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the package</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rstudioai)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Launch the AI assistant</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="fu">run_rgent</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="web-interface" class="level2">
+<h2 class="anchored" data-anchor-id="web-interface">Web Interface</h2>
+<p>Visit <a href="https://rgentai.com">rgentai.com</a> for: - User dashboard and usage tracking - Subscription management - Installation instructions - Documentation and examples</p>
+</section>
+</section>
+<section id="future-enhancements" class="level1">
+<h1>Future Enhancements</h1>
+<section id="planned-features" class="level2">
+<h2 class="anchored" data-anchor-id="planned-features">Planned Features</h2>
+<ul>
+<li><strong>Custom agent creation</strong> - Users can define their own specialized agents</li>
+<li><strong>Collaborative features</strong> - Share agents and workflows with teams</li>
+<li><strong>Advanced visualization</strong> - Interactive plot editing and manipulation</li>
+<li><strong>Model deployment</strong> - Deploy trained models directly from RStudio</li>
+<li><strong>Integration expansion</strong> - Support for Python, Julia, and other languages</li>
+</ul>
+</section>
+<section id="technical-roadmap" class="level2">
+<h2 class="anchored" data-anchor-id="technical-roadmap">Technical Roadmap</h2>
+<ul>
+<li><strong>Performance improvements</strong> - Faster response times and better caching</li>
+<li><strong>Enhanced security</strong> - Additional authentication methods and audit logging</li>
+<li><strong>Scalability</strong> - Support for enterprise deployments and team management</li>
+<li><strong>API expansion</strong> - Public API for third-party integrations</li>
+</ul>
+</section>
+</section>
+<section id="conclusion" class="level1">
+<h1>Conclusion</h1>
+<p>RgentAI represents a significant advancement in AI-assisted data science by providing deep integration with RStudio and specialized workflows for common data science tasks. Unlike general-purpose AI tools, RgentAI understands the context of your R environment, can analyze your plots, and provides structured, executable solutions that integrate seamlessly into your existing workflow.</p>
+<p>The combination of specialized agents, real-time context capture, and production-ready infrastructure makes RgentAI a powerful tool for both individual data scientists and teams looking to accelerate their R-based analytics workflows.</p>
+<hr>
+<p><em>For more information, visit <a href="https://rgentai.com">rgentai.com</a> or check out the <a href="https://github.com/NathanBresette/Rgent-AI">GitHub repository</a>.</em></p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+      <i class="bi bi-phone" role="img">
+</i> 
+ 816-969-0150
+  </li>  
+</ul>
+    </div>   
+    <div class="nav-footer-center">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://linkedin.com">
+<p>LinkedIn</p>
+</a>
+  </li>  
+</ul>
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+      <i class="bi bi-envelope" role="img">
+</i> 
+ nathanbresette04@gmail.com
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

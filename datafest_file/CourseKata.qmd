@@ -1,5 +1,5 @@
 ---
-title: "CourseKata"
+title: "Actual DataFest - CourseKata"
 author: "Nathan Bresette, Dane Winterboer, Evan AuBuchon, Severin Hussey"
 date: "2024-04-6"
 categories: [Data Cleaning, XGBoost, Presentation, R]
@@ -33,12 +33,4 @@ The book version for College (ABC) is important to the pass/fail rate of the stu
   width="800" 
   height="500" 
   src="CourseKata.pdf">
-</iframe>
-
-### We Won!
-Out of 20 teams, we were able to take the prize of best in show!
-<iframe 
-  width="800" 
-  height="500" 
-  src="data_win.jpeg">
 </iframe>

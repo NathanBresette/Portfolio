@@ -2,13 +2,16 @@
   {
     "listing": "/datafest.html",
     "items": [
-      "/datafest_file/Traffic Impact.html",
-      "/datafest_file/CourseKata.html"
+      "/datafest_file/DataFest_Final.html",
+      "/datafest_file/Practice_Datafest2025.html",
+      "/datafest_file/CourseKata.html",
+      "/datafest_file/Traffic Impact.html"
     ]
   },
   {
     "listing": "/projects.html",
     "items": [
+      "/posts/portfolio_rgentai/portfolio_rgentai.html",
       "/posts/Brain Tumor/BrainTumor.html",
       "/posts/DDPM/DDPM_Port.html",
       "/posts/ticketdata/ticketanalysis.html",

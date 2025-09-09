@@ -1,0 +1,1052 @@
+---
+title: "Practice DataFest - Royals Analysis"
+date: 03-23-2025 
+author: Nathan Bresette, Matthew Wolz, Bek Usmonov, Jossua Chartier 
+categories: [RandomForest, VIP, Visualizations]
+image: "baseball_practice.png"
+
+output:
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+format:
+  html:
+    code-link: true
+    code-fold: true
+    code-overflow: wrap
+    warning: false
+execute:
+  eval: false
+  cache: false
+---
+
+Research Question: What factors contributed to the pitchers’ overall success for the Kansas City Royals 2024 season?
+
+# Slides
+
+<iframe 
+  width="800" 
+  height="500" 
+  src="DataFestPractice.pdf">
+</iframe>
+
+# Analysis of Kansas City Royals Baseball Data
+
+## Introduction
+This report presents an in-depth analysis of Kansas City Royals baseball 2024 season data, 
+focusing on pitching performance using statistical and machine learning techniques. The analysis leverages `dplyr` for data cleaning, `ggplot2` for visualization, and `tidymodels` for predictive modeling. 
+
+This project was completed in six hours from coming up with a research questions, creating visualizations, predictice models, and key takeaways. We did this to practice for DataFest, a regional data competition, the following week.
+
+
+```{r}
+library(tidyverse)
+library(scales)
+library(randomForest)
+library(vip)
+library(caret)
+library(knitr)
+library(kableExtra)
+```
+
+## Data Cleaning
+### Data Source
+The data is collected from https://statds.org/events/csas2025/challenge.html that provides over 700,000 rows and 113 columns on the 2024 MLB season. A vector of KC Royals hitters is created for future use in our data cleaning.
+```{r}
+# Vector of Kansas City Royals Hitters
+kc_batters <- c(
+  "Witt Jr., Bobby", "Perez, Salvador", "Garcia, Maikel", 
+  "Pasquantino, Vinnie", "Melendez, MJ", "Renfroe, Hunter",
+  "Isbel, Kyle", "Fermin, Freddy", "Massey, Michael",
+  "Frazier, Adam", "Hampson, Garrett", "Velazquez, Nelson",
+  "Loftin, Nick", "Blanco, Dairon", "DeJong, Paul",
+  "Pham, Tommy", "Gurriel, Yuli", "Grossman, Robbie",
+  "Waters, Drew", "Alexander, CJ", "Gentry, Tyler"
+)
+```
+
+### Filtering and Feauture Engineering
+Since our research question is for the Kansas City Royals, we select only games that the KC Royals played in. The vector of royals players is now used to filter any rows where they were at-bat. This ensures that we now only have rows where the opposing team only has hitters since we want to look at KC Royals pitching. Acceleration and velocity each have an x,y, and z variable so to condense the number of variables, we combine the x,y, and z into a single normalized variable for both accelaration and velocity. Our team selected the rest of the columns after research and choosing all columns that could be related to pitching data. Lastly, a new variable was created that determines whether a pitcher was succesful. If the pitcher got a strikeout, fieldout, double_play, strikeout into a double play, force out, fielders choice out, field error, catcher interference (not the pitcher's fault), or a truncated plate appearance, it was recorded as a success. All other outcomes such as singles, doubles, triples, homeruns, sac-bunts, or sac-flys, are recorded as a pitcher's failure.
+```{r}
+data_baseball <- read.csv("~/Downloads/statcast_pitch_swing_data_20240402_20241030_with_arm_angle.csv", stringsAsFactors=TRUE)
+
+
+kc_data <- data_baseball %>%
+  filter(home_team == "KC" | away_team == "KC") %>%
+  filter(!(batter %in% kc_batters)) %>%
+  mutate(
+    vx0_normalized = scale(vx0),
+    vy0_normalized = scale(vy0),
+    vz0_normalized = scale(vz0),
+    ax_normalized = scale(ax),
+    ay_normalized = scale(ay),
+    az_normalized = scale(az)
+  ) %>%
+  mutate(
+    combined_normalized_velocity = rowMeans(select(., vx0_normalized, vy0_normalized, vz0_normalized)),
+    combined_normalized_acceleration = rowMeans(select(., ax_normalized, ay_normalized, az_normalized))
+  ) %>% 
+  # Exclude rows where the batter is on the KC 2024 roster
+  select(
+    events, pitcher, batter, release_speed, release_spin_rate, effective_speed, 
+    pfx_x, pfx_z, zone, plate_x, plate_z, events, hit_distance_sc, 
+    woba_value, delta_pitcher_run_exp, game_date, outs_when_up, 
+    home_team, away_team, hc_x, hc_y, description, combined_normalized_velocity, combined_normalized_acceleration, pitch_name,      pitch_type, spin_axis
+  ) %>% 
+  mutate(pitcher_outcome = case_when(
+    events %in% c("strikeout", "field_out", "double_play", "strikeout_double_play", "force_out", "fielders_choice_out",             "field_error", "catcher_interf", "truncated_pa") ~ "success", 
+    events %in% c("single", "double", "triple", "home_run", "walk", "hit_by_pitch", 
+                  "fielders_choice", "sac_bunt", "sac_fly", "sac_fly_double_play") ~ "fail"  )) %>% 
+  filter(!is.na(pitcher_outcome))
+```
+
+## Exploratory Data Analysis
+The distributions, correlations, and boxplots of our variables were analyzed using InquisitR package. Since so many graphs are produced during the EDA stage, the output will be excluded.
+```{r, eval=FALSE}
+distributionR(kc_data)
+boxplotR(kc_data)
+
+correlationR(kc_data)
+```
+
+## Pitching Analysis
+The model shows that the location of where the ball is thrown is important to the pitchers success. This can be visualized in two main ways with the first way being zones compared to hit distances. The 1-9 zones are a strike while 11-14 are balls. Zones 7-9 are lower in the strikezone which shows that the pitchers allow a smaller hit distance when the ball is thrown here. Zones 11-14 are not over the plate (not a strike) which also have a lower hit distance. As our ALE plot shows, a lower hit distance gives a better chance of pitcher success.
+```{r, warning=FALSE}
+ggplot(kc_data, aes(x = factor(zone), y = hit_distance_sc, fill = pitcher_outcome)) +
+  geom_boxplot(alpha = 0.7) +
+  labs(
+    title = "Hit Distance by Zone and Outcome",
+    x = "Pitch Zone",
+    y = "Hit Distance",
+    fill = "Pitcher Outcome"
+  ) +
+  scale_fill_manual(values = c("success" = "#004687", "fail" = "#FFA500")) +
+  theme_minimal()
+```
+
+The second way is shown with a heat chart a location of all pitches thrown from the KC Pitchers. A majority of the pitches were thrown down with a wide variety.
+```{r}
+# Create strike zone coordinates
+strike_zone <- data.frame(
+  x = c(-0.708, 0.708, 0.708, -0.708, -0.708),  # Horizontal edges (ft from center)
+  y = c(1.5, 1.5, 3.5, 3.5, 1.5)               # Vertical edges (ft from ground)
+)
+
+# Create the heatmap with proper strike zone overlay
+ggplot(kc_data, aes(x = plate_x, y = plate_z)) + 
+  geom_bin2d() +  
+  scale_fill_viridis_c(option = "plasma") + 
+  geom_path(
+    data = strike_zone, 
+    aes(x = x, y = y), 
+    color = "black", 
+    linewidth = 1) +  
+  coord_fixed() +  
+  labs(
+    title = "Pitch Density Heatmap (KC Pitchers)", 
+    x = "Horizontal Location (feet from center)", 
+    y = "Vertical Location (feet from ground)"
+  ) + 
+  theme_minimal()
+```
+
+This scatterplot shows where hits are located based on hc_x and hx_y. Where there are several gaps in the data is where the defenders stand. The majority of doubles and triples also have a much further hit distance than singles.
+```{r, warning=FALSE}
+# Clean version without NA points
+ggplot(kc_data, aes(x = hc_x, y = -hc_y)) + 
+  geom_point(aes(color = events), alpha = 0.7) + 
+  theme_minimal() + 
+  labs(
+    title = "Hit Ball Locations on the Field (KC Games)", 
+    x = "Horizontal Location (hc_x)", 
+    y = "Vertical Location (hc_y)", 
+    color = "Event Type"
+  ) + 
+  scale_color_manual(
+    values = c(
+      "single" = "#004687",
+      "double" = "#FF5F1F",
+      "triple" = "#00B5B8",
+      "home_run" = "#F2C800"
+    ),
+    limits = c("single", "double", "triple", "home_run"),  # Reorder legend
+    labels = c("single" = "Single", "double" = "Double", "triple" = "Triple", "home_run" = "Home Run"),  # Rename legend labels
+    na.value = NA  # Explicitly remove NA values
+  )
+
+```
+
+Release speed was also found as an important 
+```{r}
+speed_bins_clean <- kc_data %>%
+  filter(!is.na(release_speed), !is.na(pitcher_outcome), 
+         release_speed >= 70, release_speed <= 100) %>%
+  mutate(
+    speed_bin = cut(
+      release_speed,
+      breaks = seq(70, 100, by = 5),
+      labels = paste0(seq(70, 95, by = 5), "-", seq(75, 100, by = 5)),
+      include.lowest = TRUE
+    )
+  ) %>%
+  group_by(speed_bin) %>%
+  summarise(success_rate = mean(pitcher_outcome == "success"), .groups = "drop")
+
+ggplot(speed_bins_clean, aes(x = speed_bin, y = success_rate)) +
+  geom_col(fill = "blue", width = 0.7, alpha = 0.8) +
+  geom_text(
+    aes(label = percent(success_rate, accuracy = 1)),
+    vjust = -0.5, 
+    size = 3.5,
+    fontface = "bold"
+  ) +
+  scale_y_continuous(
+    labels = percent_format(),
+    limits = c(0, max(speed_bins_clean$success_rate) * 1.1)) +
+  labs(
+    title = "Pitcher Success Rate by Release Speed (KC Games",
+    x = "Release Speed (mph)",
+    y = "Success Rate"
+  ) +
+  theme_minimal()
+```
+
+
+
+```{r}
+library(tidymodels)
+set.seed(123)
+
+# Prepare data
+rf_data <- kc_data %>%
+  mutate(pitcher_outcome = factor(pitcher_outcome, levels = c("fail", "success"))) %>% 
+  select(-c("pitcher", "batter", "game_date", "events", "woba_value", 
+           "delta_pitcher_run_exp", "description", "hc_x", "hc_y"))
+
+train_index <- createDataPartition(rf_data$pitcher_outcome, p = 0.8, list = FALSE)
+train_data <- rf_data[train_index, ]
+test_data <- rf_data[-train_index, ]
+
+# Recipe for feature preprocessing
+recipe_spec <- recipe(pitcher_outcome ~ ., data = train_data) %>%
+  step_dummy(all_nominal_predictors(), -all_outcomes()) %>%
+  step_zv(all_predictors()) %>% 
+  step_impute_mean(all_numeric_predictors()) %>%  # Replace NAs in numeric columns with mean
+  step_impute_mode(all_nominal_predictors())      # Replace NAs in categorical columns with mode
+
+
+
+# Define models
+rf_model <- rand_forest(
+  mtry = tune(),
+  trees = 500,
+  min_n = tune()
+) %>%
+  set_engine("randomForest") %>%
+  set_mode("classification")
+
+xgb_model <- boost_tree(
+  trees = tune(),
+  tree_depth = tune(),
+  learn_rate = tune()
+) %>%
+  set_engine("xgboost") %>%
+  set_mode("classification")
+
+# Create workflows
+rf_workflow <- workflow() %>%
+  add_recipe(recipe_spec) %>%
+  add_model(rf_model)
+
+xgb_workflow <- workflow() %>%
+  add_recipe(recipe_spec) %>%
+  add_model(xgb_model)
+
+# Cross-validation
+cv_folds <- vfold_cv(train_data, v = 5)
+
+# Define tuning grids
+rf_grid <- grid_random(
+  mtry(range = c(2, ncol(train_data) - 1)), 
+  min_n(range = c(2, 10)), 
+  size = 20
+)
+
+xgb_grid <- grid_random(
+  trees(range = c(100, 1000)), 
+  tree_depth(range = c(3, 10)), 
+  learn_rate(range = c(0.01, 0.3)), 
+  size = 20
+)
+
+# Tune models
+rf_tune <- tune_grid(
+  rf_workflow, 
+  resamples = cv_folds, 
+  grid = rf_grid
+)
+
+xgb_tune <- tune_grid(
+  xgb_workflow, 
+  resamples = cv_folds, 
+  grid = xgb_grid
+)
+```
+
+```{r}
+# Collect tuning results
+rf_results <- collect_metrics(rf_tune)
+xgb_results <- collect_metrics(xgb_tune)
+
+# Combine the results for comparison
+tuning_results <- bind_rows(
+  rf_results %>% mutate(model = "Random Forest"),
+  xgb_results %>% mutate(model = "XGBoost")
+)
+
+# Print the comparison of metrics
+print(tuning_results)
+```
+
+
+```{r}
+# Select best hyperparameters
+best_rf <- select_best(rf_tune, metric = "accuracy")
+best_xgb <- select_best(xgb_tune, metric = "accuracy")
+
+# Finalize models
+final_rf <- finalize_workflow(rf_workflow, best_rf)
+final_xgb <- finalize_workflow(xgb_workflow, best_xgb)
+
+# Fit final models
+rf_fit <- fit(final_rf, data = train_data)
+xgb_fit <- fit(final_xgb, data = train_data)
+
+# Evaluate on test data
+rf_preds <- predict(rf_fit, test_data, type = "class") %>%
+  bind_cols(test_data %>% select(pitcher_outcome))
+
+xgb_preds <- predict(xgb_fit, test_data, type = "class") %>%
+  bind_cols(test_data %>% select(pitcher_outcome))
+
+show_best(rf_tune, metric = "accuracy", n = 5)  # Show top 5 results
+
+# Variable Importance Plot (for Random Forest)
+vip::vip(rf_fit$fit$fit) + 
+  geom_bar(stat = "identity", fill = "#0073e6") + 
+  labs(
+    title = "Variable Importance for Pitcher Success Outcome (RF)",
+    x = "Importance", 
+    y = "Variables"
+  ) +  
+  theme_minimal()
+
+```
+
+
+```{r}
+# Extract the top 5 variables from the variable importance plot
+library(randomForest)
+library(pdp)
+library(ALEPlot)
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+
+# Extract the model and preprocessed data
+# We need to ensure we're using the processed data that has the same structure as what the model was trained on
+extract_model_info <- function(workflow_fit) {
+  # Extract the random forest model
+  model <- workflow_fit$fit$fit
+  
+  # Get the recipe from the workflow
+  recipe_obj <- workflow_fit$pre$actions$recipe$recipe
+  
+  # Apply the recipe to get processed training data
+  processed_data <- prep(recipe_obj) %>% 
+    bake(new_data = NULL)
+  
+  return(list(model = model, processed_data = processed_data))
+}
+
+# Extract model and processed data
+model_info <- extract_model_info(rf_fit)
+rf_model <- model_info$model
+processed_train_data <- model_info$processed_data
+
+# Get variable importance
+var_imp <- vip::vi(rf_model)
+top_5_vars <- var_imp %>% 
+  arrange(desc(Importance)) %>% 
+  slice_head(n = 5) %>% 
+  pull(Variable)
+
+print("Top 5 Variables:")
+print(top_5_vars)
+
+# Function to create both PDP and ALE plots for a variable
+create_plots <- function(var_name, model, processed_data) {
+  # For PDP
+  pdp_result <- NULL
+  pdp_plot <- NULL
+  
+  tryCatch({
+    pdp_result <- partial(model, pred.var = var_name, 
+                         train = processed_data,
+                         prob = TRUE, which.class = 2)
+    
+    pdp_plot <- autoplot(pdp_result) +
+      theme_minimal() +
+      labs(title = paste("PDP for", var_name),
+           y = "Probability of Success",
+           x = var_name)
+  }, error = function(e) {
+    message("Error in PDP: ", e$message)
+    pdp_plot <- ggplot() + 
+      annotate("text", x = 0.5, y = 0.5, 
+               label = paste("Error in PDP plot:", e$message)) +
+      theme_void() +
+      labs(title = paste("PDP Error for", var_name))
+  })
+  
+  # For ALE
+  ale_plot <- NULL
+  
+  tryCatch({
+    # Create a numeric predictor function for randomForest
+    pred_fun <- function(X) {
+      preds <- predict(model, X, type = "prob")
+      if(is.vector(preds)) {
+        return(preds)  # For binary classification returning a vector
+      } else {
+        return(preds[,2])  # For returning the second column (success probability)
+      }
+    }
+    
+    # Set up a temporary plotting device
+    ale_file <- tempfile(fileext = ".png")
+    png(ale_file, width = 800, height = 600)
+    
+    J_index <- which(names(processed_data) == var_name)
+    
+    ALEPlot(processed_data[, names(processed_data) != "pitcher_outcome"], 
+            model, 
+            J = J_index,
+            pred.fun = pred_fun)
+    title(paste("ALE for", var_name))
+    
+    dev.off()
+    
+    # Read back the ALE plot
+    if(file.exists(ale_file)) {
+      img <- tryCatch({
+        jpeg::readJPEG(ale_file)
+      }, error = function(e) {
+        message("Error reading ALE plot file: ", e$message)
+        NULL
+      })
+      
+      if(!is.null(img)) {
+        ale_plot <- ggplot() + 
+          annotation_custom(grid::rasterGrob(img), 
+                          xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)
+      }
+    }
+  }, error = function(e) {
+    message("Error in ALE: ", e$message)
+    ale_plot <- ggplot() + 
+      annotate("text", x = 0.5, y = 0.5, 
+               label = paste("Error in ALE plot:", e$message)) +
+      theme_void() +
+      labs(title = paste("ALE Error for", var_name))
+  })
+  
+  # If either plot failed, provide a fallback
+  if(is.null(pdp_plot)) {
+    pdp_plot <- ggplot() + 
+      annotate("text", x = 0.5, y = 0.5, 
+               label = "Failed to generate PDP plot") +
+      theme_void()
+  }
+  
+  if(is.null(ale_plot)) {
+    ale_plot <- ggplot() + 
+      annotate("text", x = 0.5, y = 0.5, 
+               label = "Failed to generate ALE plot") +
+      theme_void()
+  }
+  
+  # Combine plots
+  combined_plot <- gridExtra::grid.arrange(pdp_plot, ale_plot, ncol = 2)
+  
+  return(combined_plot)
+}
+
+# Alternative approach using vip package for partial dependence plots
+create_plots_vip <- function(var_name, model, processed_data) {
+  pdp_plot <- NULL
+  
+  tryCatch({
+    pdp_plot <- vip::partial(model, pred.var = var_name, 
+                           train = processed_data,
+                           prob = TRUE, which.class = 2,
+                           plot = TRUE, plot.engine = "ggplot2") +
+      theme_minimal() +
+      labs(title = paste("PDP for", var_name),
+           y = "Probability of Success",
+           x = var_name)
+  }, error = function(e) {
+    message("Error in VIP partial: ", e$message)
+    pdp_plot <- ggplot() + 
+      annotate("text", x = 0.5, y = 0.5, 
+               label = paste("Error in PDP plot:", e$message)) +
+      theme_void() +
+      labs(title = paste("PDP Error for", var_name))
+  })
+  
+  return(pdp_plot)
+}
+
+# Try the plots one by one
+for(var in top_5_vars) {
+  cat("\nGenerating plots for:", var, "\n")
+  
+  # Try with the vip package first (simpler approach)
+  tryCatch({
+    pdp_plot <- create_plots_vip(var, rf_model, processed_train_data)
+    print(pdp_plot)
+    cat("Successfully generated PDP plot for", var, "\n")
+  }, error = function(e) {
+    cat("Failed to generate PDP plot for", var, ":", e$message, "\n")
+  })
+  
+  # Attempt the combined plots if needed
+  tryCatch({
+    plot <- create_plots(var, rf_model, processed_train_data)
+    plots_list[[var]] <- plot
+    print(plot)
+    cat("Successfully generated combined plots for", var, "\n")
+  }, error = function(e) {
+    cat("Failed to generate combined plots for", var, ":", e$message, "\n")
+  })
+}
+
+# Create a simple variable importance plot
+importance_plot <- var_imp %>%
+  arrange(desc(Importance)) %>%
+  slice_head(n = 10) %>%
+  ggplot(aes(x = reorder(Variable, Importance), y = Importance)) +
+  geom_bar(stat = "identity", fill = "#0073e6") +
+  coord_flip() +
+  theme_minimal() +
+  labs(
+    title = "Top 10 Variables by Importance",
+    x = "Variables",
+    y = "Importance"
+  )
+
+print(importance_plot)
+
+# Summary table of the top variables
+summary_table <- var_imp %>%
+  arrange(desc(Importance)) %>%
+  slice_head(n = 10) %>%  # Show top 10 for context
+  mutate(
+    Importance = round(Importance, 4),
+    Percentage = round(Importance / sum(var_imp$Importance) * 100, 2)
+  ) %>%
+  select(Variable, Importance, Percentage)
+
+print("Variable Importance Summary:")
+print(summary_table)
+```
+
+```{r}
+# Load required libraries
+library(tidymodels)
+library(pdp)
+library(vip)
+library(ggplot2)
+library(dplyr)
+
+# First, let's print out the top variable importance values
+var_imp_df <- vi(rf_fit)
+print("Variable Importance:")
+print(var_imp_df %>% arrange(desc(Importance)) %>% head(10))
+
+# Get top 5 variables
+top_5_vars <- var_imp_df %>% 
+  arrange(desc(Importance)) %>% 
+  slice_head(n = 5) %>% 
+  pull(Variable)
+
+print("Top 5 Variables:")
+print(top_5_vars)
+
+# Create a variable importance plot
+importance_plot <- var_imp_df %>%
+  arrange(desc(Importance)) %>%
+  slice_head(n = 10) %>%
+  ggplot(aes(x = reorder(Variable, Importance), y = Importance)) +
+  geom_bar(stat = "identity", fill = "#0073e6") +
+  coord_flip() +
+  theme_minimal() +
+  labs(
+    title = "Top 10 Variables by Importance",
+    x = "Variables",
+    y = "Variable Importance"
+  )
+
+print(importance_plot)
+
+# Calculate summary statistics for variable importance
+summary_table <- var_imp_df %>%
+  arrange(desc(Importance)) %>%
+  slice_head(n = 10) %>%
+  mutate(
+    Importance = round(Importance, 4),
+    Percentage = round(Importance / sum(var_imp_df$Importance) * 100, 2)
+  ) %>%
+  select(Variable, Importance, Percentage)
+
+print("Variable Importance Summary:")
+print(summary_table)
+
+# Extract the actual fitted model from the workflow
+extract_model <- function(workflow_fit) {
+  # Get the underlying model
+  model <- workflow_fit$fit$fit
+  return(model)
+}
+
+# Extract the preprocessed training data
+extract_processed_data <- function(workflow_fit, original_data) {
+  # Get the recipe
+  recipe_obj <- workflow_fit$pre$actions$recipe$recipe
+  
+  # Prepare and apply the recipe to the original data
+  prepped_recipe <- prep(recipe_obj)
+  processed_data <- bake(prepped_recipe, new_data = original_data)
+  return(processed_data)
+}
+
+# Extract the model and processed data
+rf_model <- extract_model(rf_fit)
+processed_train <- extract_processed_data(rf_fit, train_data)
+
+# Function to create PDP plots using the pdp package
+create_pdp_plots <- function(model, var_name, data) {
+  cat("\nGenerating PDP plot for:", var_name, "\n")
+  
+  # Create a prediction function for the model
+  pred_func <- function(object, newdata) {
+    # For RF classification, we want probability of "success"
+    # This adapts based on the actual model type
+    preds <- predict(object, newdata, type = "prob")
+    if (is.data.frame(preds) || is.matrix(preds)) {
+      return(preds[, "success"])  # Return probability of success
+    } else {
+      return(preds)  # Return as is
+    }
+  }
+  
+  tryCatch({
+    # Check if variable exists in the data
+    if (var_name %in% names(data)) {
+      # Create partial dependence data
+      pdp_result <- pdp::partial(
+        object = model,
+        pred.var = var_name,
+        pred.fun = pred_func,
+        train = data,
+        grid.resolution = 50  # Higher resolution for smoother curves
+      )
+      
+      # Create PDP plot
+      p <- ggplot(pdp_result, aes_string(x = var_name, y = "yhat")) +
+        geom_smooth(method = "loess", color = "#0073e6", size = 1) +  # Loess line instead of points
+        theme_minimal() +
+        labs(
+          title = paste("Partial Dependence Plot for", var_name),
+          subtitle = "Effect on probability of pitcher success",
+          y = "Predicted Probability",
+          x = var_name
+        )
+      
+      print(p)
+      cat("Successfully created PDP plot for", var_name, "\n")
+      return(p)
+    } else {
+      cat("Variable", var_name, "not found in data. Available variables:\n")
+      cat(paste(names(data)[1:min(10, length(names(data)))], collapse = ", "), "...\n")
+      return(NULL)
+    }
+  }, error = function(e) {
+    cat("Error creating PDP plot for", var_name, ":", e$message, "\n")
+    return(NULL)
+  })
+}
+
+# Create PDP plots for each top variable
+pdp_plots <- list()
+for (var in top_5_vars) {
+  plot <- create_pdp_plots(rf_model, var, processed_train)
+  if (!is.null(plot)) {
+    pdp_plots[[var]] <- plot
+  }
+}
+
+
+print("check")
+print(pdp_plots)
+
+# Display summary of successful plots
+cat("\nSuccessfully created", length(pdp_plots), "out of", length(top_5_vars), "PDP plots\n")
+
+# Interpretation helper
+cat("\nInterpretation of PDP Plots:\n")
+cat("1. The Y-axis shows the predicted probability of pitcher success\n")
+cat("2. The X-axis shows the value of the predictor variable\n")
+cat("3. The line shows how the predicted probability changes as the variable changes\n")
+cat("4. Steeper slopes indicate stronger influence on the prediction\n")
+cat("5. Flat regions suggest the variable has little effect in that range\n")
+```
+
+
+```{r}
+# Load necessary libraries
+library(randomForest)
+library(pdp)
+library(ggplot2)
+library(dplyr)
+library(vip)
+
+# Function to create line PDP plots for the top 5 variable importance predictors
+create_pdp_for_top_vars <- function(rf_model, train_data) {
+  # Get variable importance from the random forest model
+  var_imp_df <- vi(rf_model)
+  
+  # Get top 5 variables based on importance
+  top_5_vars <- var_imp_df %>%
+    arrange(desc(Importance)) %>%
+    slice_head(n = 5) %>%
+    pull(Variable)
+  
+  # Ensure the variables are numeric
+  numeric_vars <- top_5_vars[sapply(train_data[top_5_vars], is.numeric)]
+  
+  # Create a list to store the PDP plots
+  pdp_plots <- list()
+  
+  # Create PDP plots for each numeric variable
+  for (var in numeric_vars) {
+    cat("\nGenerating PDP plot for:", var, "\n")
+    
+    # Create partial dependence data
+    pdp_result <- partial(rf_model, pred.var = var, grid.resolution = 50)
+    
+    # Plot the PDP as a line plot
+    pdp_plot <- ggplot(pdp_result, aes_string(x = var, y = "yhat")) +
+      geom_line(color = "#0073e6", size = 1) +
+      theme_minimal() +
+      ggtitle(paste("Partial Dependence Plot for", var)) +
+      labs(x = var, y = "Predicted Probability")
+    
+    # Store the plot in the list
+    pdp_plots[[var]] <- pdp_plot
+  }
+  
+  # Return the list of PDP plots
+  return(pdp_plots)
+}
+
+# Test on the iris dataset
+rf_fit <- randomForest(Species ~ ., data = iris)
+
+# Call the function to create PDP plots for the top 5 variables
+pdp_plots <- create_pdp_for_top_vars(rf_fit, iris)
+
+# Display the PDP plots
+for (plot in pdp_plots) {
+  print(plot)
+}
+
+```
+
+```{r}
+library(pdp)
+library(ggplot2)
+
+# Fit a random forest model (for example)
+rf_fit <- randomForest(Species ~ ., data = iris)
+
+# Create a PDP for a specific variable
+pdp_result <- partial(rf_fit, pred.var = "Sepal.Length", grid.resolution = 50)
+
+# Plot the PDP as a line plot
+pdp_plot <- ggplot(pdp_result, aes(x = Sepal.Length, y = yhat)) +
+  geom_line(color = "#0073e6", size = 1) +  # Line instead of points
+  theme_minimal() +
+  ggtitle("Partial Dependence Plot for Sepal.Length") +
+  labs(x = "Sepal Length", y = "Predicted Probability")
+
+# Display the plot
+print(pdp_plot)
+
+```
+
+```{r}
+# Load required libraries
+library(tidymodels)
+library(pdp)
+library(vip)
+library(ggplot2)
+library(dplyr)
+
+# First, let's print out the top variable importance values
+var_imp_df <- vi(rf_fit)
+print("Variable Importance:")
+print(var_imp_df %>% arrange(desc(Importance)) %>% head(10))
+
+# Get top 5 variables
+top_5_vars <- var_imp_df %>% 
+  arrange(desc(Importance)) %>% 
+  slice_head(n = 5) %>% 
+  pull(Variable)
+
+print("Top 5 Variables:")
+print(top_5_vars)
+
+# Create a variable importance plot
+importance_plot <- var_imp_df %>%
+  arrange(desc(Importance)) %>%
+  slice_head(n = 10) %>%
+  ggplot(aes(x = reorder(Variable, Importance), y = Importance)) +
+  geom_bar(stat = "identity", fill = "#0073e6") +
+  coord_flip() +
+  theme_minimal() +
+  labs(
+    title = "Top 10 Variables by Importance",
+    x = "Variables",
+    y = "Variable Importance"
+  )
+
+print(importance_plot)
+
+# Calculate summary statistics for variable importance
+summary_table <- var_imp_df %>%
+  arrange(desc(Importance)) %>%
+  slice_head(n = 10) %>%
+  mutate(
+    Importance = round(Importance, 4),
+    Percentage = round(Importance / sum(var_imp_df$Importance) * 100, 2)
+  ) %>%
+  select(Variable, Importance, Percentage)
+
+print("Variable Importance Summary:")
+print(summary_table)
+
+# Extract the fitted model and preprocessed data
+rf_model <- extract_model(rf_fit)
+processed_train <- extract_processed_data(rf_fit, train_data)
+
+# Create and plot PDP for each top variable
+for (var in top_5_vars) {
+  # Generate Partial Dependence data
+  pdp_result <- partial(rf_model, pred.var = var, train = processed_train, grid.resolution = 50)
+  
+  # Plot the PDP directly
+  p <- plot(pdp_result) +
+    ggtitle(paste("Partial Dependence Plot for", var)) +
+    theme_minimal()
+  
+  print(p)
+}
+
+# Display the summary of successful plots
+cat("\nSuccessfully created PDP plots for the top 5 variables\n")
+
+# Interpretation helper
+cat("\nInterpretation of PDP Plots:\n")
+cat("1. The Y-axis shows the predicted probability of pitcher success\n")
+cat("2. The X-axis shows the value of the predictor variable\n")
+cat("3. The line shows how the predicted probability changes as the variable changes\n")
+cat("4. Steeper slopes indicate stronger influence on the prediction\n")
+cat("5. Flat regions suggest the variable has little effect in that range\n")
+
+```
+
+```{r}
+# Generate Accumulated Local Effects (ALE) Plots
+ale_plots <- list()
+for (var in top_5_vars) {
+  ale_data <- ALEPlot(as.matrix(train_data[, -1]), train_data$pitcher_outcome, 
+                      pred.fun = function(X.model, newdata) predict(rf_fit, newdata, type = "prob")[,2], 
+                      J = which(names(train_data) == var))
+  
+  ale_plot <- ggplot(data.frame(x = ale_data$x.values, y = ale_data$f.values), aes(x, y)) +
+    geom_line(color = "blue") +
+    labs(title = paste("ALE for", var), x = var, y = "Effect") +
+    theme_minimal()
+  
+  ale_plots[[var]] <- ale_plot
+}
+
+# Display all ALE plots
+print(ale_plots)
+
+
+
+```
+
+
+```{r}
+strikeouts_per_pitcher <- data_baseball %>%
+  filter(home_team == "KC" | away_team == "KC") %>%
+  filter(events == "strikeout") %>%
+  group_by(pitcher) %>%
+  summarise(strikeouts = n()) %>%
+  arrange(desc(strikeouts))
+
+strikeouts_per_pitcher
+```
+
+```{r}
+# Prepare the data with normalized metrics
+pp_data <- data_baseball %>%
+  filter(home_team == "KC" | away_team == "KC") %>%
+  mutate(
+    # Convert scaled values to numeric vectors
+    vx0_normalized = as.numeric(scale(vx0)),
+    vy0_normalized = as.numeric(scale(vy0)),
+    vz0_normalized = as.numeric(scale(vz0)),
+    ax_normalized = as.numeric(scale(ax)),
+    ay_normalized = as.numeric(scale(ay)),
+    az_normalized = as.numeric(scale(az))
+  ) %>%
+  mutate(
+    combined_normalized_velocity = rowMeans(cbind(vx0_normalized, vy0_normalized, vz0_normalized), na.rm = TRUE),
+    combined_normalized_acceleration = rowMeans(cbind(ax_normalized, ay_normalized, az_normalized), na.rm = TRUE)
+  ) %>%
+  mutate(
+    Pitcher = case_when(
+      pitcher == 666142 ~ "Cole Ragans",
+      pitcher == 607625 ~ "Seth Lugo",
+      pitcher == 663903 ~ "Brady Singer",
+      pitcher == 608379 ~ "Michael Wacha",
+      pitcher == 679525 ~ "Alec Marsh",
+      TRUE ~ as.character(pitcher)
+    )
+  ) %>%
+  filter(Pitcher %in% c("Cole Ragans", "Seth Lugo", "Brady Singer", "Michael Wacha", "Alec Marsh")) %>%
+  mutate(
+    pitcher_outcome = case_when(
+      events %in% c("strikeout", "field_out", "double_play", "strikeout_double_play", 
+                   "force_out", "fielders_choice_out", "field_error", 
+                   "catcher_interf", "truncated_pa") ~ "success", 
+      events %in% c("single", "double", "triple", "home_run", "walk", "hit_by_pitch", 
+                   "fielders_choice", "sac_bunt", "sac_fly", "sac_fly_double_play") ~ "fail",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  filter(!is.na(pitcher_outcome))
+
+# Calculate summary statistics
+summary_stats <- pp_data %>%
+  group_by(Pitcher) %>%
+  summarise(
+    Total_Pitches = n(),
+    Total_Success = sum(pitcher_outcome == "success"),
+    Total_Fail = sum(pitcher_outcome == "fail"),
+    Avg_Hit_Distance = round(mean(hit_distance_sc, na.rm = TRUE), 2),
+    Avg_Release_Speed = round(mean(release_speed, na.rm = TRUE), 2),
+    Avg_Effective_Speed = round(mean(effective_speed, na.rm = TRUE), 2),
+    Avg_Normalized_Accel = round(mean(combined_normalized_acceleration, na.rm = TRUE), 2),
+    Avg_Normalized_Velocity = round(mean(combined_normalized_velocity, na.rm = TRUE), 2),
+    .groups = "drop"
+  ) %>%
+  mutate(Success_Percentage = round((Total_Success / Total_Pitches) * 100, 2)) %>%
+  arrange(desc(Success_Percentage))
+
+# Display the table
+summary_stats %>%
+  kable(format = "latex", booktabs = TRUE, caption = "Pitcher Performance Summary") %>%
+  kable_styling(latex_options = c("striped", "hold_position", "scale_down")) %>%
+  column_spec(1, bold = TRUE) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#007bff") %>%
+  add_header_above(c(" " = 1, "Basic Stats" = 2, "Performance Metrics" = 5, "Normalized Metrics" = 2)) %>%
+  scroll_box(width = "100%", height = "300px")
+
+summary_stats
+```
+
+```{r}
+ggplot(kc_data, aes(x = pfx_x, y = pfx_z, color = pitcher_outcome)) +
+  geom_point(alpha = 0.4) +
+  facet_wrap(~pitch_name) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  scale_color_manual(values = c("fail" = "#FF5252", "success" = "#448AFF")) +
+  labs(
+    title = "Horizontal vs. Vertical Movement by Pitch Type",
+    x = "Horizontal Movement (pfx_x, inches)",
+    y = "Vertical Movement (pfx_z, inches)",
+    color = "Outcome"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+fastball_data <- kc_data %>%
+  filter(pitch_name == "4-Seam Fastball", 
+         !is.na(spin_axis),
+         !is.na(pitcher_outcome)) %>%
+  mutate(
+    spin_axis = as.numeric(spin_axis),
+    pitcher_outcome = factor(pitcher_outcome, 
+                           levels = c("success", "fail"),
+                           labels = c("Out Recorded", "Hit Allowed"))
+  )
+
+ggplot(fastball_data, aes(x = spin_axis, fill = pitcher_outcome)) +
+  geom_histogram(
+    binwidth = 15,
+    boundary = 0,
+    color = "white",
+    linewidth = 0.3,
+    position = "stack",
+    alpha = 0.85
+  ) +
+  coord_polar(start = -pi/2, direction = -1) +
+  scale_x_continuous(
+    limits = c(0, 360),
+    breaks = seq(0, 315, by = 45),
+    labels = c("0°", "45°", "90°", "135°", "180°", "225°", "270°", "315°")
+  ) +
+  scale_fill_manual(
+    values = c("Out Recorded" = "#00A087", "Hit Allowed" = "#E64B35"),
+    guide = guide_legend(title = "Pitch Outcome")
+  ) +
+  labs(
+    title = "4-Seam Fastball Spin Axis Distribution",
+    subtitle = "Successful outs vs. hits allowed | 0° = Topspin, 180° = Pure Backspin",
+    x = "",
+    y = ""
+  ) +
+  theme_minimal()
+```
+
+```{r}
+ggplot(kc_data, aes(x = release_speed, y = effective_speed, color = pitcher_outcome)) +
+  geom_point(alpha = 0.4) +
+  facet_wrap(~pitch_name) +
+  scale_color_manual(values = c("fail" = "#FF5252", "success" = "#448AFF")) +
+  labs(
+    title = "Release Speed vs. Effective Speed by Pitch Type",
+    x = "Release Speed (mph)",
+    y = "Effective Speed (mph)",
+    color = "Outcome"
+  ) +
+  theme_minimal()
+```

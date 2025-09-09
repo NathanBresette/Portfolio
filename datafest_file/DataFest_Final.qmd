@@ -1,0 +1,596 @@
+---
+title: "Actual DataFest - Real Estate Analysis"
+date: 04-01-2025 
+author: Nathan Bresette, Matthew Wolz, Bek Usmonov, Jossua Chartier 
+categories: [RandomForest, ALE Plots, Maps]
+image: "maps_actual.png"
+
+output:
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+format:
+  html:
+    code-link: true
+    code-fold: true
+    code-overflow: wrap
+    warning: false
+execute:
+  eval: false
+  cache: false
+---
+
+Teams were asked to explore real, proprietary data provided from the commercial real estate advising firm Savills, looking for property categories that might be systemically overpriced or underpriced for their particular market. Students were given multiple tables of data, totaling more than six million rows of data across more than 100 total variables. The completed report and presentation were reviewed by a panel of real-world experts who selected winners in several categories.
+
+# Slides
+
+<iframe 
+  width="800" 
+  height="500" 
+  src="DataFestAllGraph.pdf">
+</iframe>
+
+# Load Data & Libraries
+```{r}
+Unemployment <- read.csv("~/Downloads/Unemployment.csv", stringsAsFactors = TRUE) 
+
+PriceAvailability <- read.csv("~/Downloads/Price and Availability Data.csv", stringsAsFactors = TRUE)
+
+MajorMarket <- read.csv("~/Downloads/Major Market Occupancy Data-revised.csv", stringsAsFactors = TRUE)
+
+Leases <- read.csv("~/Downloads/Leases.csv", stringsAsFactors = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(randomForest)
+library(scales)
+```
+
+# Data cleaning and manipulation
+
+## Join Tables
+```{r}
+# Join the datasets by common columns
+Leases <- merge(Leases, Unemployment, by = c("year", "quarter", "state"), all.x = TRUE)
+Leases <- merge(Leases, MajorMarket, by = c("year", "quarter", "market"), all.x = TRUE)
+```
+
+## Group by to remove duplicates
+```{r}
+get_mode <- function(x) {
+  uniqx <- unique(x)
+  uniqx[which.max(tabulate(match(x, uniqx)))]
+}
+
+# Get grouped data since there are so many duplicate rows
+grouped_data <- Leases %>%
+  group_by(overall_rent) %>%
+  summarize(
+    unemployment_rate = mean(unemployment_rate, na.rm = TRUE),
+    # ending_occupancy_proportion = mean(ending_occupancy_proportion, na.rm = TRUE), - had too many NA's to be utilized for our model
+    # starting_occupancy_proportion = mean(starting_occupancy_proportion, na.rm = TRUE), - had too many NA's to be utilized for our model
+    avg_occupancy_proportion = mean(avg_occupancy_proportion, na.rm = TRUE),
+    leasedSF = mean(leasedSF, na.rm = TRUE),
+    RBA = mean(RBA, na.rm = TRUE),
+    availability_proportion = mean(availability_proportion, na.rm = TRUE),
+    market = get_mode(market),
+    zip = get_mode(zip),
+    internal_class = get_mode(internal_class),
+    transaction_type = get_mode(transaction_type),
+    space_type = get_mode(space_type),
+    CBD_suburban = get_mode(CBD_suburban),
+
+    year = get_mode(year),
+    monthsigned = get_mode(monthsigned),
+    .groups = 'drop'  
+  )
+
+head(grouped_data)
+
+```
+## Impute NA values
+```{r}
+impute_mode <- function(x) {
+  mode_value <- as.character(names(sort(table(x), decreasing = TRUE))[1])
+  x[is.na(x)] <- mode_value
+  return(x)
+}
+
+impute_mean <- function(df) {
+  numeric_cols <- sapply(df, is.numeric)
+  df[, numeric_cols] <- lapply(df[, numeric_cols], function(x) {
+    x[is.na(x)] <- mean(x, na.rm = TRUE)  # Replace NA with the mean of the column
+    return(x)
+  })
+  return(df)
+}
+
+
+
+grouped_data$space_type <- impute_mode(grouped_data$space_type)
+grouped_data <- impute_mean(grouped_data)
+
+na_values <- cbind(lapply(lapply(grouped_data, is.na), sum))
+na_values
+```
+# RF model
+```{r}
+rf_model <- randomForest(overall_rent ~ ., data = grouped_data, importance = TRUE)
+
+print(rf_model)
+```
+
+## VIP Plot
+```{r}
+importance_data <- importance(rf_model)
+
+
+importance_df <- data.frame(Variable = rownames(importance_data), 
+                            Importance = importance_data[, 1])  
+
+importance_df <- importance_df %>% arrange(desc(Importance))
+
+ggplot(importance_df, aes(x = reorder(Variable, abs(Importance)), y = abs(Importance))) +
+  geom_bar(stat = "identity", fill = "darkgreen") + 
+  coord_flip() + 
+  labs(title = "Variable Importance for Predicting Overall Rent",
+       x = "",
+       y = "Importance",
+       caption = "DataFest 2025 Analysis") +
+  theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+    plot.subtitle = element_text(size = 12, hjust = 0.5, color = "gray40"),
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(color = "gray90", fill = NA),
+    plot.caption = element_text(color = "gray50", face = "italic")
+  )
+```
+
+## Create Price variable
+```{r}
+predictions <- predict(rf_model, grouped_data)
+
+grouped_data$predicted_rent <- predictions
+
+grouped_data$price_category <- ifelse(grouped_data$overall_rent > grouped_data$predicted_rent, 1, 0)
+
+```
+
+# ALE Plots
+```{r}
+generate_ale_plots <- function(model, data, target) {
+  library(iml)
+  library(ggplot2)
+
+  # Get the variable importance (VIP) from the random forest model
+  vip_values <- importance(model)
+  
+  # Sort by importance and get the top 5 features
+  top_5_features <- names(sort(vip_values[, 1], decreasing = TRUE))[6]
+  
+  # Remove any NA values from the list of top features
+  top_5_features <- na.omit(top_5_features)
+
+  
+  # Create the Predictor object
+  predictor <- Predictor$new(model, data = data, y = data[[target]])
+  
+  # Loop through the top features and plot their ALE
+  for (feature in top_5_features) {
+    if (feature %in% colnames(data)) {
+      ale <- FeatureEffect$new(predictor, feature = feature, method = "ale")
+      print(paste("Plotting ALE for feature:", feature))
+      
+      # Extract ALE data
+      ale_df <- ale$results
+      
+      # Rename columns for clarity
+      colnames(ale_df)[colnames(ale_df) == feature] <- "feature_value"
+      
+      # Create custom ALE plot without rug marks
+      ale_plot <- ggplot(ale_df, aes(x = feature_value, y = .value)) +
+        geom_line(color = "steelblue", size = 1.2) +
+        theme_minimal() +
+        labs(
+          title = "ALE Plot for Availability Proportion",
+             subtitle = "As Availability Proportion increases, the probability of overprice occuring increases",
+             x = "Availability Proportion",
+             y = "Accumulated Local Effect on Predicted Price",
+            caption = "DataFest 2025 Analysis"
+        ) +
+        theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+    plot.subtitle = element_text(size = 12, hjust = 0.5, color = "gray40"),
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(color = "gray90", fill = NA),
+    plot.caption = element_text(color = "gray50", face = "italic")
+  )
+      
+      # Display the plot
+      print(ale_plot)
+    } else {
+      print(paste("Feature", feature, "not found in the dataset. Skipping."))
+    }
+  }
+}
+
+
+generate_ale_plots(rf_model, grouped_data, target = "price_category")
+```
+
+
+```{r}
+generate_ale_plots <- function(model, data, target) {
+  library(iml)
+  library(ggplot2)
+
+  # Get the variable importance (VIP) from the random forest model
+  vip_values <- importance(model)
+  print("VIP values:")
+  print(vip_values)
+  
+  # Sort by importance and get the top 5 features
+  top_5_features <- names(sort(vip_values[, 1], decreasing = TRUE))[3]
+  
+  # Remove any NA values from the list of top features
+  top_5_features <- na.omit(top_5_features)
+  print("Top features after removing NA values:")
+  print(top_5_features)
+  
+  # Create the Predictor object
+  predictor <- Predictor$new(model, data = data, y = data[[target]])
+  
+  # Loop through the top features and plot their ALE
+  for (feature in top_5_features) {
+    if (feature %in% colnames(data)) {
+      ale <- FeatureEffect$new(predictor, feature = feature, method = "ale")
+      print(paste("Plotting ALE for feature:", feature))
+      
+      # Extract ALE data
+      ale_df <- ale$results
+      
+      # Rename columns for clarity
+      colnames(ale_df)[colnames(ale_df) == feature] <- "feature_value"
+      
+      # Create custom ALE plot without rug marks
+      ale_plot <- ggplot(ale_df, aes(x = feature_value, y = .value)) +
+        geom_line(color = "steelblue", size = 1.2) +
+        theme_minimal() +
+        labs(
+          title = "ALE Plot for Rentable Building Area (RBA)",
+             subtitle = "As RBA increases, the probability of overprice occuring increases",
+             x = "RBA",
+             y = "Accumulated Local Effect on Predicted Price",
+            caption = "DataFest 2025 Analysis"
+        ) +
+      scale_x_continuous(labels = comma) +
+          theme_minimal(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+    plot.subtitle = element_text(size = 12, hjust = 0.5, color = "gray40"),
+    panel.grid.minor = element_blank(),
+    panel.border = element_rect(color = "gray90", fill = NA),
+    plot.caption = element_text(color = "gray50", face = "italic")
+  )
+      
+      # Display the plot
+      print(ale_plot)
+    } else {
+      print(paste("Feature", feature, "not found in the dataset. Skipping."))
+    }
+  }
+}
+
+
+generate_ale_plots(rf_model, grouped_data, target = "price_category")
+
+```
+
+# Table
+```{r}
+library(DT)
+library(dplyr)
+
+grouped_data <- grouped_data %>%
+  mutate(across(where(is.numeric), ~round(., 2)))
+
+grouped_data <- grouped_data %>%
+  mutate(PriceCategory = ifelse(price_category == 1, "Overpriced", "Underpriced"))
+
+distinct_markets <- grouped_data %>%
+  group_by(market) %>%
+    filter(year == 2024) %>% 
+
+  slice_sample(n = 1) %>% 
+  ungroup() %>%
+  slice_head(n = 10)
+
+datatable(
+  distinct_markets[, c("market", "RBA", "year", "availability_proportion","overall_rent", "predicted_rent", "PriceCategory")],
+  colnames = c("Market", "RBA", "Year", "Availability Proportion","Overall Rent", "Predicted Rent", "Price Category"),
+  options = list(pageLength = 10),
+  caption = "8 Buildings in Different Markets with Predicted Pricing"
+)
+
+
+```
+
+# Line plot
+```{r}
+yearly_rent <- Leases %>%
+  group_by(year, region) %>%
+  summarize(avg_rent = mean(overall_rent, na.rm = TRUE), .groups = 'drop')
+
+last_points <- yearly_rent %>%
+  filter(year == 2024) %>%
+  select(region, year, avg_rent)
+
+percent_changes <- last_points %>%
+  mutate(
+    label = case_when(
+      region == "Midwest/Central" ~ "+15.7%",
+      region == "Northeast" ~ "+13.3%",
+      region == "South" ~ "+25.4%",
+      region == "West" ~ "+15.1%"
+    )
+  )
+
+ggplot(yearly_rent, aes(x = year, y = avg_rent, color = region)) +
+  geom_smooth(se = FALSE, method = "loess", linewidth = 1.5, span = 0.6) +
+  geom_point(data = yearly_rent, aes(x = year, y = avg_rent), 
+             color = "black", size = 2, inherit.aes = FALSE) +
+  geom_label(
+    data = percent_changes %>% filter(region != "South"),
+    aes(x = year + 0.2, y = avg_rent, label = label, color = region),
+    hjust = 0, fontface = "bold", size = 5, show.legend = FALSE,
+    fill = NA, label.size = NA
+  ) +
+  geom_label(
+    data = percent_changes %>% filter(region == "South"),
+    aes(x = year + 0.2, y = avg_rent, label = label),
+    hjust = 0, fontface = "bold", size = 5, 
+    color = "green4", fill = "white", label.size = 0.5,
+    label.padding = unit(0.3, "lines")
+  ) +
+  scale_color_manual(values = c(
+    "Midwest/Central" = "red",
+    "Northeast" = "steelblue",
+    "South" = "green4",
+    "West" = "purple"
+  )) +
+  scale_x_continuous(breaks = 2018:2024, limits = c(2018, 2025)) +
+  labs(
+    title = "Regional Rent Trends with Percent Change",
+    subtitle = "2018–2024 cumulative growth by region - Southern rent is on the rise",
+    x = "Year",
+    y = "Average Rent",
+    color = "Region",
+    caption = "DataFest 2025 Analysis"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(face = "bold", size = 18, hjust = 0.5),
+    plot.subtitle = element_text(size = 13, hjust = 0.5, color = "gray40"),
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold"),
+    legend.text = element_text(size = 11),
+    plot.caption = element_text(size = 9, color = "gray40", face = "italic", hjust = 1),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+    axis.title = element_text(size = 13),
+    plot.margin = ggplot2::margin(t = 10, r = 60, b = 20, l = 10)
+  )
+```
+
+# Map
+```{r}
+market_to_city <- tribble(
+  ~market, ~city, ~state,
+  "Atlanta", "Atlanta", "GA",
+  "Austin", "Austin", "TX",
+  "Baltimore", "Baltimore", "MD",
+  "Boston", "Boston", "MA",
+  "Charlotte", "Charlotte", "NC",
+  "Chicago Suburbs", "Chicago", "IL", 
+  "Dallas/Ft Worth", "Dallas", "TX",  
+  "Detroit", "Detroit", "MI",
+  "Houston", "Houston", "TX",
+  "Los Angeles", "Los Angeles", "CA",
+  "Manhattan", "New York", "NY",      
+  "Nashville", "Nashville", "TN",
+  "Northern New Jersey", "Newark", "NJ",  
+  "Northern Virginia", "Arlington", "VA", 
+  "Philadelphia", "Philadelphia", "PA",
+  "Phoenix", "Phoenix", "AZ",
+  "Salt Lake City", "Salt Lake City", "UT",
+  "San Diego", "San Diego", "CA",
+  "San Francisco", "San Francisco", "CA",
+  "Seattle", "Seattle", "WA"
+)
+
+grouped_data$overpriced <- ifelse(grouped_data$overall_rent > grouped_data$predicted_rent, 1, 0)
+
+market_overpriced_avg <- grouped_data %>%
+  group_by(market) %>%
+  summarise(avg_overpriced = mean(overpriced, na.rm = TRUE), .groups = 'drop') %>%
+  filter(!is.na(avg_overpriced)) 
+
+market_locations <- market_overpriced_avg %>%
+  left_join(market_to_city, by = "market")
+
+manual_coords <- tribble(
+  ~city, ~lat, ~lon,
+  "Atlanta", 33.7490, -84.3880,
+  "Austin", 30.2672, -97.7431,
+  "Baltimore", 39.2904, -76.6122,
+  "Boston", 42.3601, -71.0589,
+  "Charlotte", 35.2271, -80.8431,
+  "Chicago", 41.8781, -87.6298,
+  "Dallas", 32.7767, -96.7970,
+  "Detroit", 42.3314, -83.0458,
+  "Houston", 29.7604, -95.3698,
+  "Los Angeles", 34.0522, -118.2437,
+"New York", 41.5, -74.0060,
+"Nashville", 36.1627, -86.7816,
+  "Newark", 40.7357, -74.1724,
+  "Arlington", 38.8796, -77.1068,
+  "Philadelphia", 39.9526, -75.1652,
+  "Phoenix", 33.4484, -112.0740,
+  "Salt Lake City", 40.7608, -111.8910,
+  "San Diego", 32.7157, -117.1611,
+  "San Francisco", 37.7749, -122.4194,
+  "Seattle", 47.6062, -122.3321
+)
+
+market_locations_final <- market_locations %>%
+  left_join(manual_coords, by = "city") %>%
+  filter(!is.na(lat) & !is.na(lon)) 
+
+
+library(leaflet)
+library(maps)
+library(htmlwidgets)
+
+pal <- colorNumeric(
+  palette = c("red", "yellow", "green"),
+  domain = c(0, 1),
+  reverse = TRUE
+)
+
+us_map <- leaflet(data = market_locations_final) %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  setView(lng = -98.5795, lat = 39.8283, zoom = 4) %>%
+  addCircles(
+    lng = ~lon,
+    lat = ~lat,
+    weight = 1,
+    radius = 100000,
+    color = ~pal(avg_overpriced),
+    fillColor = ~pal(avg_overpriced),
+    fillOpacity = 0.7,
+    label = ~market
+  ) %>%
+  addLabelOnlyMarkers(
+    lng = ~lon,
+    lat = ~lat,
+    label = ~market,
+    labelOptions = labelOptions(
+      noHide = TRUE,
+      direction = "center",
+      textOnly = TRUE,
+      style = list("font-size" = "12px", "font-weight" = "bold", "color" = "black")
+    )
+  ) %>%
+  addLegend(
+    pal = pal,
+    values = c(0, 1),
+    title = "Underpriced to Overpriced: A Map of U.S",
+    position = "bottomright",
+    opacity = 0.8,
+    labFormat = function(type, cuts, p) {
+      n <- length(cuts)
+      cuts <- round(cuts, 2)
+      labels <- cuts
+      labels[1] <- paste(cuts[1], "Underpriced")
+      labels[n] <- paste(cuts[n], "Overpriced")
+      labels[2:(n-1)] <- cuts[2:(n-1)]
+      labels
+    }
+  ) %>%
+  htmlwidgets::onRender(
+    "function(el, x) {
+      var legend = document.querySelector('.legend');
+      if (legend) {
+        var labels = legend.getElementsByTagName('span');
+        for (var i = 0; i < labels.length; i++) {
+          labels[i].style.textAlign = 'center';
+          labels[i].style.paddingLeft = '5px';
+          labels[i].style.paddingRight = '5px';
+        }
+        legend.style.display = 'flex';
+        legend.style.flexDirection = 'column-reverse';
+        legend.style.alignItems = 'center';
+      }
+    }"
+  )
+
+us_map
+```
+
+# Green and Red
+``` {r}
+library(gifski)
+library(gganimate)
+
+
+market_year_avg <- grouped_data %>%
+  group_by(market, year) %>%
+  summarise(avg_overpriced = mean(overpriced, na.rm = TRUE), .groups = "drop") %>%
+  # Convert avg_overpriced to x-position (-1 to 1 scale)
+  mutate(x_position = case_when(
+    avg_overpriced == 0 ~ 0,  # Neutral
+    avg_overpriced < 0.5 ~ -1,  # Underpriced (less than half overpriced)
+    avg_overpriced >= 0.5 ~ 1,  # Overpriced (more than half overpriced)
+    TRUE ~ 0  # Default to neutral if no clear threshold
+  )) %>%
+
+    mutate(y_position = as.numeric(factor(market, levels = unique(market))) - 1)  # Fixed y for each market
+
+if (nrow(market_year_avg) == 0) stop("No data in market_year_avg. Check grouped_data.")
+
+grouped_data <- grouped_data %>%
+  mutate(year = as.numeric(year),  # Convert year to numeric
+         overpriced = ifelse(is.na(overpriced), 0, overpriced))  # Handle NA in overpriced
+
+if (nrow(market_year_avg) == 0) stop("No data after aggregation. Check grouped_data.")
+market_year_avg_updated <- market_year_avg %>%
+  mutate(x_position = ifelse(avg_overpriced >= 0.5, 1, -1))
+
+if (nrow(market_year_avg_updated) == 0) stop("No data after updating. Check market_year_avg.")
+
+p <- ggplot(market_year_avg_updated, aes(x = x_position, y = y_position, group = market)) +
+  geom_rect(aes(xmin = -1.5, xmax = 0, ymin = min(y_position) - 0.5, ymax = max(y_position) + 0.5), 
+            fill = "#4CBB17", alpha = 0.3) +
+  geom_rect(aes(xmin = 0, xmax = 1.5, ymin = min(y_position) - 0.5, ymax = max(y_position) + 0.5), 
+            fill = "#E34234", alpha = 0.3) +
+  geom_text(aes(label = market), vjust = 0.5, size = 5, color = "black", fontface = "bold") +
+  scale_x_continuous(
+    breaks = c(-1, 1),
+    labels = c("Underpriced", "Overpriced"),
+    limits = c(-1.5, 1.5),
+    position = "top"
+  ) +
+  scale_y_continuous(breaks = unique(market_year_avg_updated$y_position), 
+                    labels = NULL, 
+                    name = NULL) +
+  geom_label(data = market_year_avg_updated, aes(x = 0, y = max(y_position) + 2, label = paste("Year:", year)), 
+             fill = "white", color = "black", size = 6, label.size = 2, vjust = 0, hjust = 0.5, inherit.aes = FALSE) +
+  labs(
+    title = "Market Pricing Movement: {closest_state}",
+    x = NULL,
+    y = NULL
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.title.y = element_blank(),
+    panel.grid = element_blank(),
+    axis.text.x.top = element_text(size = 14, face = "bold", vjust = 0),
+    legend.position = "none",
+    plot.margin = ggplot2::margin(t = 40, r = 10, b = 20, l = 10),
+    plot.caption = element_text(hjust = 1, size = 12, face = "italic")
+  ) +
+  transition_states(year, transition_length = 20, state_length = 30) +
+  ease_aes("linear")
+
+# anim <- animate(p, nframes = length(unique(market_year_avg_updated$year)) * 60, fps = 15, 
+#                 width = 800, height = 600, 
+#                 renderer = gifski_renderer(loop = TRUE))
+
+```
