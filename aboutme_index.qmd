@@ -17,10 +17,6 @@ I hold a B.S. in Statistics (Data Science concentration) with a minor in Mathema
 
 &nbsp;
 
-In addition, I founded RgentAI LLC, where I developed AI-powered data science assistants and full-stack applications that help bridge the gap between machine learning research and practical use cases.
-
-&nbsp;
-
-This portfolio highlights a diverse range of my projects—from statistical modeling and NLP pipelines to healthcare research and software development—that showcase both my technical skills and my drive to make a meaningful impact through data science.
+In addition, I founded RgentAI LLC, where I developed AI-powered data science assistants and full-stack applications that help bridge the gap between machine learning research and practical use cases. This portfolio highlights a diverse range of my projects—from statistical modeling and NLP pipelines to healthcare research and software development—that showcase both my technical skills and my drive to make a meaningful impact through data science.
 
 &nbsp;
